@@ -1,0 +1,27 @@
+{
+  "name": "rxrest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
+    "express": "^4.14.0",
+    "isomorphic-fetch": "^2.2.1",
+    "mocha": "^3.1.0",
+    "tslint": "^3.15.1",
+    "typescript": "^2.0.3",
+    "typings": "^1.4.0",
+    "urlsearchparams": "^0.1.1"
+  },
+  "dependencies": {
+    "rxjs": "^5.0.0-beta.12"
+  },
+  "typings": "lib/index.d.ts"
+}
