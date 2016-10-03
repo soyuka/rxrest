@@ -9,20 +9,49 @@ export interface ResponseInterceptor {
   (request: RxRestCollection | RxRestItem): Observable<RxRestCollection | RxRestItem>;
 }
 
-class RxRestConfiguration {
+export class RxRestConfiguration {
   baseURL: string
   identifier: string = 'id'
-  requestInterceptors: RequestInterceptor[] = [];
-  responseInterceptors: ResponseInterceptor[] = [];
+  requestInterceptors: RequestInterceptor[] = []
+  responseInterceptors: ResponseInterceptor[] = []
+  headers: Headers = new Headers()
+  queryParams: URLSearchParams = new URLSearchParams()
+
+  requestBodyHandler(body: any): any {
+    if (!body) {
+      return undefined
+    }
+
+    if (body instanceof FormData || body instanceof URLSearchParams) {
+      return body
+    }
+
+    return body instanceof RxRestItem ? body.json() : JSON.stringify(body)
+  }
+
+  responseBodyHandler(body: Response): Promise<any> {
+    if (!body.ok) {
+      return Promise.reject(body)
+    }
+
+    return body.text()
+    .then(text => {
+      try {
+        text = JSON.parse(text)
+      } catch(e) {}
+
+      return Promise.resolve(text)
+    })
+  }
 }
 
 const Config = new RxRestConfiguration()
 
 export class RxRest {
-  protected $route: string[];
-  $fromServer: boolean = false;
-  $queryParams: URLSearchParams = new URLSearchParams();
-  $headers: Headers = new Headers();
+  protected $route: string[]
+  $fromServer: boolean = false
+  $queryParams: URLSearchParams = new URLSearchParams()
+  $headers: Headers = new Headers()
 
   constructor(route?: string[]) {
     this.$route = route === undefined ? [] : [...route]
@@ -69,7 +98,10 @@ export class RxRest {
     return Config.identifier
   }
 
-  set queryParams(params: Object | URLSearchParams) {
+  /**
+   * @param params Object | URLSearchParams
+   */
+  set localQueryParams(params: any) {
     if (params instanceof URLSearchParams) {
       this.$queryParams = params
       return
@@ -78,21 +110,65 @@ export class RxRest {
     this.$queryParams = new URLSearchParams()
 
     for (let i in params) {
-      this.$queryParams.append(i, params[i])
+      this.$queryParams.set(i, params[i])
     }
   }
 
-  get queryParams() {
-    let params = this.$queryParams.toString()
-    if (params.length) {
-      return '?'+params
+  /**
+   * @return URLSearchParams
+   */
+  get localQueryParams(): any {
+    return this.$queryParams
+  }
+
+  /**
+   * @param params Object | URLSearchParams
+   */
+  set queryParams(params: any) {
+    if (params instanceof URLSearchParams) {
+      for(let p of params) {
+        Config.queryParams.set(p[0], p[1])
+      }
+      return
+    }
+
+    for (let i in params) {
+      Config.queryParams.set(i, params[i])
+    }
+  }
+
+  /**
+   * @return URLSearchParams
+   */
+  get queryParams(): any {
+    return Config.queryParams
+  }
+
+  get requestQueryParams(): String {
+    let params = new URLSearchParams()
+
+    for (let param of this.queryParams) {
+      params.set(param[0], param[1])
+    }
+
+    for (let param of this.localQueryParams) {
+      params.set(param[0], param[1])
+    }
+
+    let str = params.toString()
+
+    if (str.length) {
+      return '?'+str
     }
 
     return ''
   }
 
-  set headers(params: Object | Headers) {
-    if (params instanceof Headers) {
+  /**
+   * @param params Object | Headers
+   */
+  set localHeaders(params: Object | Headers) {
+     if (params instanceof Headers) {
       this.$headers = params
       return
     }
@@ -100,62 +176,116 @@ export class RxRest {
     this.$headers = new Headers()
 
     for (let i in params) {
-      this.$headers.append(i, params[i])
+      this.$headers.set(i, params[i])
     }
-  }
+ }
 
-  get headers() {
+  /**
+   * @return Headers
+   */
+  get localHeaders(): Object | Headers {
     return this.$headers
   }
 
-  addRequestInterceptor(requestInterceptor: RequestInterceptor): RxRest {
-    Config.requestInterceptors.push(requestInterceptor)
-    return this
+  /**
+   * @param params Object | Headers
+   */
+  set headers(params: Object | Headers) {
+     if (params instanceof Headers) {
+      for(let p of params) {
+        Config.headers.set(p[0], p[1])
+      }
+      return
+    }
+
+    for (let i in params) {
+      Config.headers.set(i, params[i])
+    }
+ }
+
+  /**
+   * @return Headers
+   */
+  get headers(): Object | Headers {
+    return Config.headers
   }
 
-  addResponseInterceptor(responseInterceptor: ResponseInterceptor): RxRest {
-    Config.responseInterceptors.push(responseInterceptor)
-    return this
+  get requestHeaders(): Headers {
+    let headers = new Headers()
+
+    for(let header of Config.headers) {
+      headers.set(header[0], header[1])
+    }
+
+    for(let header of this.$headers) {
+      headers.set(header[0], header[1])
+    }
+
+    return headers
+  }
+
+  get requestInterceptors() {
+    return Config.requestInterceptors
+  }
+
+  set requestInterceptors(requestInterceptors: RequestInterceptor[]) {
+    Config.requestInterceptors = requestInterceptors
+  }
+
+  get responseInterceptors() {
+    return Config.responseInterceptors
+  }
+
+  set responseInterceptors(responseInterceptor: ResponseInterceptor[]) {
+    Config.responseInterceptors = responseInterceptor
+  }
+
+  set requestBodyHandler(fn: any) {
+    Config.requestBodyHandler = fn
+  }
+
+  get requestBodyHandler(): any {
+    return Config.requestBodyHandler
+  }
+
+  set responseBodyHandler(fn: any) {
+    Config.responseBodyHandler = fn
+  }
+
+  get responseBodyHandler(): any {
+    return Config.responseBodyHandler
   }
 
   expandInterceptors(interceptors: RequestInterceptor[] | ResponseInterceptor[]) {
-    return function(item: any) {
-      let i = 0
-      return Observable.of(item)
-      .expand((item): any => {
-        if (i > interceptors.length - 1) {
-          return Observable.empty()
+    return function(origin: any): Observable<any> {
+      return (<any>interceptors).reduce((obs: Observable<any>, interceptor: any) => obs.concatMap(value => {
+        let result = interceptor(value)
+        if (result === undefined) {
+          return Observable.of(value)
         }
 
-        let response = (<any> interceptors[i++])(item)
-
-        if (undefined === response) {
-          return Observable.of(item)
+        if (result instanceof Observable || result instanceof Promise) {
+          return result
         }
 
-        if (response instanceof Observable || response instanceof Promise) {
-          return response
-        }
-
-        return Observable.of(response)
-      })
-      .last()
+        return Observable.of(result)
+      }), Observable.of(origin))
     }
   }
 
   request(method: string, body?: Body|Blob|FormData|URLSearchParams|Object|RxRestItem): Observable<RxRestItem | RxRestCollection> {
     let requestOptions = {
       method: method,
-      headers: <Headers> this.headers,
-      body: body instanceof RxRestItem ? body.plain() : body
+      headers: <Headers> this.requestHeaders,
+      body: this.requestBodyHandler(body)
     }
 
-    let request = new Request(this.URL+this.queryParams, requestOptions);
+    let request = new Request(this.URL+this.requestQueryParams, requestOptions);
 
     return Observable.of(request)
-    .flatMap(request => this.expandInterceptors(Config.requestInterceptors)(request))
+    .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => Observable.fromPromise(fetch(request)))
-    .flatMap(body => Observable.fromPromise(body.json()))
+    .flatMap(body => Observable.fromPromise(this.responseBodyHandler(body)))
     .map(e => {
       if (!Array.isArray(e)) {
         let item: RxRestItem
@@ -177,7 +307,7 @@ export class RxRest {
         return item
       }))
     })
-    // .concatMap(response => this.expandInterceptors(Config.responseInterceptors)(response))
+    .flatMap(this.expandInterceptors(Config.responseInterceptors))
   }
 }
 
@@ -197,74 +327,66 @@ export class RxRestItem extends RxRest {
   }
 
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('GET')
   }
 
   post(body?: Body|Blob|FormData|URLSearchParams|Object|RxRestItem, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('POST', body ? body : this)
   }
 
   put(body?: Body|Blob|FormData|URLSearchParams|Object|RxRestItem, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('POST', body ? body : this)
   }
 
   patch(body?: Body|Blob|FormData|URLSearchParams|Object|RxRestItem, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('PATCH', body ? body : this)
   }
 
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('DELETE')
   }
 
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('HEAD')
   }
 
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('TRACE')
   }
 
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('OPTIONS')
   }
 
-  clone(): RxRestItem {
-    return new RxRestItem(this.$route, this.$element)
-  }
-
   save(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
-    return this.request(this.$fromServer === true ? 'PUT' : 'POST')
-  }
-
-  plain(): Object {
-    return this.element
+    return this.request(this.$fromServer === true ? 'PUT' : 'POST', this)
   }
 
   set element(element: Object) {
@@ -279,6 +401,18 @@ export class RxRestItem extends RxRest {
 
   get element(): Object {
     return this.$element
+  }
+
+  plain(): Object {
+    return this.element
+  }
+
+  json(): String {
+    return JSON.stringify(this.element)
+  }
+
+  clone(): RxRestItem {
+    return new RxRestItem(this.$route, this.$element)
   }
 }
 
@@ -309,14 +443,10 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
   }
 
   getList(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem | RxRestCollection> {
-    this.queryParams = queryParams
-    this.headers = headers
+    this.localQueryParams = queryParams
+    this.localHeaders = headers
 
     return this.request('GET')
-  }
-
-  plain(): Object[] {
-    return this.elements.map(e => e.plain())
   }
 
   set elements(elements: any[]) {
@@ -326,6 +456,14 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
 
   get elements(): any[] {
     return this.$elements
+  }
+
+  plain(): Object[] {
+    return this.elements.map(e => e.plain())
+  }
+
+  json(): String {
+    return JSON.stringify(this.elements)
   }
 
   clone(): RxRestCollection {

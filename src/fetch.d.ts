@@ -17,11 +17,11 @@ declare var URLSearchParams: URLSearchParams;
 
 interface Body {
   bodyUsed?: boolean;
-  arrayBuffer: (response: Response) => ArrayBuffer;
-  blob: (response: Response) => Blob;
-  formData: (response: Response) => FormData;
-  json: (response: Response) => Object;
-  text: (response: Response) => string;
+  arrayBuffer: () => Promise<ArrayBuffer>;
+  blob: () => Promise<Blob>;
+  formData: () => Promise<FormData>;
+  json: () => Promise<Object>;
+  text: () => Promise<string>;
 }
 
 declare var Body: Body;
