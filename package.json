@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts"
+    "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
+    "test": "./node_modules/.bin/mocha"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +17,7 @@
     "chai-spies": "^0.7.1",
     "express": "^4.14.0",
     "formdata": "^0.10.4",
+    "istanbul": "^0.4.5",
     "mocha": "^3.1.0",
     "node-fetch": "git+https://github.com/soyuka/node-fetch.git#master",
     "tslint": "^3.15.1",

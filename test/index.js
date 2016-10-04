@@ -89,10 +89,21 @@ describe('RxRest', function() {
       item.bar = 'bar'
       delete item.foo
 
-      expect(item.plain()).to.deep.equal({bar: 'bar', id: 3})
+      Object.defineProperty(item, 'foobar', {
+        value: 'foobar',
+        enumerable: true
+      })
+
+      //can't override internal property
+      Object.defineProperty(item, '$element', {
+        value: 'foobar',
+        enumerable: true
+      })
+
+      expect(item.plain()).to.deep.equal({bar: 'bar', id: 3, foobar: 'foobar'})
 
       let clone = item.clone()
-      expect(clone.plain()).to.deep.equal({bar: 'bar', id: 3})
+      expect(clone.plain()).to.deep.equal({bar: 'bar', id: 3, foobar: 'foobar'})
       expect(clone.$fromServer).to.equal(true)
       expect(clone.URL).to.equal('http://localhost:3333/test/3')
 

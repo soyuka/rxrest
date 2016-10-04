@@ -17,10 +17,14 @@ export class RxRestProxyHandler implements ProxyHandler<RxRest> {
     return Object.getPrototypeOf(this.$instance)
   }
 
-  // defineProperty(target: any, p: PropertyKey, attributes: PropertyDescriptor): boolean {
-  //   console.log('defineProp', p );
-  //   return true
-  // }
+  defineProperty(target: any, p: PropertyKey, attributes: PropertyDescriptor): boolean {
+    if (~this.$internal.indexOf(p)) {
+      return true
+    }
+
+    Object.defineProperty(target, p, attributes)
+    return true
+  }
 
   deleteProperty(target: any, p: PropertyKey): boolean {
     return delete target[p]
