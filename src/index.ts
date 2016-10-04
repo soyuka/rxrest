@@ -478,6 +478,10 @@ export class RxRest {
     })
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .catch(body => {
+      if (!(body instanceof Response)) {
+        return Observable.throw(body)
+      }
+
       return Observable.of(body)
       .flatMap(this.expandInterceptors(Config.errorInterceptors))
     })

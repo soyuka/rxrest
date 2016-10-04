@@ -334,12 +334,28 @@ describe('RxRest', function() {
     .subscribe(function(e) {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(e.method).to.equal('delete')
-      Observable.concat(
+      Observable.combineLatest(
         e.patch(), e.trace()
       )
       .subscribe(function(e) {
         cb()
       }, cb)
     }, cb)
+  })
+
+  it('should throw non-request errors', function(cb) {
+   rxrest.requestInterceptors.push(function(body) {
+     throw new TypeError('fail')
+   })
+
+    rxrest
+    .one('test', 3)
+    .get()
+    .subscribe(function(e) {
+    }, function(e) {
+      expect(e).to.be.an.instanceof(TypeError)
+      cb()
+    })
+
   })
 })

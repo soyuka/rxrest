@@ -48,7 +48,7 @@ interface Response extends Body {
   redirect: (url: string, status: Number) => Response;
 }
 
-declare var Body: Body;
+declare var Response: Response;
 
 interface RequestOptions {
   method: string;
