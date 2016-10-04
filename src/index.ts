@@ -9,11 +9,16 @@ export interface ResponseInterceptor {
   (request: RxRestCollection | RxRestItem): Observable<RxRestCollection | RxRestItem>;
 }
 
+export interface ErrorInterceptor {
+  (response: Response): Observable<Response>;
+}
+
 export class RxRestConfiguration {
   baseURL: string
   identifier: string = 'id'
   requestInterceptors: RequestInterceptor[] = []
   responseInterceptors: ResponseInterceptor[] = []
+  errorInterceptors: ErrorInterceptor[] = []
   headers: Headers = new Headers()
   queryParams: URLSearchParams = new URLSearchParams()
 
@@ -240,6 +245,14 @@ export class RxRest {
     Config.responseInterceptors = responseInterceptor
   }
 
+  get errorInterceptors() {
+    return Config.errorInterceptors
+  }
+
+  set errorInterceptors(errorInterceptors: ErrorInterceptor[]) {
+    Config.errorInterceptors = errorInterceptors
+  }
+
   set requestBodyHandler(fn: any) {
     Config.requestBodyHandler = fn
   }
@@ -256,7 +269,7 @@ export class RxRest {
     return Config.responseBodyHandler
   }
 
-  expandInterceptors(interceptors: RequestInterceptor[] | ResponseInterceptor[]) {
+  expandInterceptors(interceptors: RequestInterceptor[] | ResponseInterceptor[] | ErrorInterceptor[]) {
     return function(origin: any): Observable<any> {
       return (<any>interceptors).reduce((obs: Observable<any>, interceptor: any) => obs.concatMap(value => {
         let result = interceptor(value)
@@ -308,6 +321,10 @@ export class RxRest {
       }))
     })
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
+    .catch(body => {
+      return Observable.of(body)
+      .flatMap(this.expandInterceptors(Config.errorInterceptors))
+    })
   }
 }
 

@@ -54,6 +54,7 @@ describe('RxRest', function() {
     rxrest.baseURL = 'http://localhost:3333'
     rxrest.requestInterceptors = []
     rxrest.responseInterceptors = []
+    rxrest.errorInterceptors = []
   })
 
   it('should get one', function(cb) {
@@ -171,10 +172,18 @@ describe('RxRest', function() {
   })
 
   it('should handle error', function(cb) {
-   rxrest.one('404')
-   .head()
-   .subscribe(e => {
-     console.log('next');
-   }, cb)
+    let spy = chai.spy(function() {})
+
+    rxrest.errorInterceptors.push(function(response) {
+      expect(response.status).to.equal(404)
+      spy()
+    })
+
+    rxrest.one('404')
+    .head()
+    .subscribe(e => {
+      expect(spy).to.have.been.called
+      cb()
+    })
   })
 })
