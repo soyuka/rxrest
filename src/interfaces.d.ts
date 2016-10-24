@@ -79,5 +79,8 @@ interface Request extends Body {
 
 declare var Request: Request;
 
-declare var fetch: (input: string|Request, init?: RequestOptions) => Promise<any>;
+declare var fetch: (input: string|Request, init?: RequestOptions) => Promise<Response>;
 
+declare module 'superagent' {
+  export {};
+}

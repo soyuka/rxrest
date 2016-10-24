@@ -1,5 +1,8 @@
+/// <reference path="interfaces.d.ts" />
+
 import {Observable} from 'rxjs'
 import {RxRestProxyHandler} from './RxRestProxyHandler'
+import {fetch} from './fetch'
 
 export interface RequestInterceptor {
   (request: Request): Observable<Request>;
@@ -453,7 +456,7 @@ export class RxRest {
 
     return Observable.of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
-    .flatMap(request => Observable.fromPromise(fetch(request)))
+    .flatMap(request => fetch(request))
     .flatMap(body => Observable.fromPromise(this.responseBodyHandler(body)))
     .map(e => {
       if (!Array.isArray(e)) {

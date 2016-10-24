@@ -5,13 +5,15 @@ chai.use(spies)
 const expect = chai.expect
 const express = require('express')
 
-const fetch = require('node-fetch')
-global.fetch = fetch
-global.Response = fetch.Response
-global.Request = fetch.Request
-global.Headers = fetch.Headers
-global.FormData = require('formdata')
+const {Headers, Response, Request} = require('node-fetch');
 require('./urlsearchparamspolyfill.js')
+
+global.Headers = Headers
+global.Response = Response
+global.Request = Request
+
+global.FormData = require('form-data')
+
 const {RxRest, RxRestItem, RxRestCollection} = require('../lib/index.js')
 let rxrest
 
@@ -199,8 +201,7 @@ describe('RxRest', function() {
       function(req) {
         spy()
         expect(req.method).to.equal('GET')
-        req.url += '?foo=bar'
-        return req
+        return new Request(req.url + '?foo=bar')
       }
     ]
 
@@ -357,5 +358,18 @@ describe('RxRest', function() {
       cb()
     })
 
+  })
+
+  it('should abort a request', function(cb) {
+    let obs = rxrest
+    .one('test', 3)
+    .get()
+    .subscribe(() => {
+      throw new Error('fail aborting')
+    })
+
+    obs.unsubscribe()
+
+    setTimeout(e => cb(), 50)
   })
 })
