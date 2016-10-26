@@ -1,16 +1,17 @@
 {
   "name": "rxrest",
   "version": "1.0.0",
-  "description": "Reactive rest library",
+  "description": "RxRest a reactive REST utility",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
-    "test": "./node_modules/.bin/mocha"
+    "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
+    "test": "npm run build && ./node_modules/.bin/mocha",
+    "build": "tsc"
   },
-  "keywords": [],
+  "keywords": ["REST", "Reactive", "Rxjs"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "body-parser": "^1.15.2",
     "chai": "^3.5.0",

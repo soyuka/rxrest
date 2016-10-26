@@ -9,8 +9,10 @@ export class RxRestProxyHandler implements ProxyHandler<RxRest> {
   constructor(target: RxRestItem | RxRestCollection) {
     this.$instance = target
     do {
-      this.$internal = this.$internal.concat(Object.getOwnPropertyNames(target), Object.getOwnPropertySymbols(target))
-    } while(target = Object.getPrototypeOf(target))
+      this.$internal = this.$internal.concat(
+        Object.getOwnPropertyNames(target), Object.getOwnPropertySymbols(target)
+      )
+    } while (target = Object.getPrototypeOf(target))
   }
 
   getPrototypeOf(target: any) {
@@ -49,4 +51,3 @@ export class RxRestProxyHandler implements ProxyHandler<RxRest> {
     return target[p]
   }
 }
-
