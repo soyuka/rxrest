@@ -15,7 +15,7 @@ Alpha!
 
 ## Example
 
-```
+```javascript
 const {RxRest} = require('rxrest')
 
 const rxrest = new RxRest()
@@ -47,16 +47,12 @@ rxrest.all('cars')
 
 ## Technical concepts
 
-This library uses [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/GlobalFetch) to perform HTTP requests. It also makes use of [`Proxy`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Proxy) and implements an [`Iterator`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/iterateurs_et_generateurs) on `RxRestCollection`.
+This library uses a [`fetch`-like](https://developer.mozilla.org/en-US/docs/Web/API/GlobalFetch) library to perform HTTP requests. It has the same api as fetch but uses XMLHttpRequest so that requests have a cancellable ability! It also makes use of [`Proxy`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Proxy) and implements an [`Iterator`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/iterateurs_et_generateurs) on `RxRestCollection`.
 
 Because it uses fetch, the RxRest library uses it's core concepts. It will add an `Object` compatibility layer to [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for query parameters and [Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers).
 It is also familiar with `Body`-like object, as `FormData`, `Response`, `Request` etc.
 
-Currently, the only dependency needed in a modern environment is `rxjs`. I wish to allow the use of other Reactive libraries in a near future.
-
-For nodejs, you can polyfill `fetch` by using `node-fetch`.
-
-On the browser, check out [`github/fetch`](https://github.com/github/fetch) or [`inexorabletash/polyfill`](https://github.com/inexorabletash/polyfill).
+This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `rxjs`. I wish to allow the use of other Reactive libraries in a near future.
 
 ## API
 
@@ -76,7 +72,7 @@ Creates an RxRestCollection on the requested route
 
 Note that this allows url composition:
 
-```
+```javascript
 rxrest.all('cars').one('audi', 1).URL
 
 > cars/audi/1
@@ -88,7 +84,7 @@ Depending on whether element is an `Object` or an `Array`, it returns an RxRestI
 
 For example:
 
-```
+```javascript
 const car = rxrest.fromObject('cars', {id: 1, brand: 'Volkswagen', name: 'Polo'})
 
 > RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo'}
@@ -104,7 +100,7 @@ RxRest automagically binds the id in the route, note that the identifier propert
 
 Performs a `GET` request, for example:
 
-```
+```javascript
 rx.one('cars', 1).get({brand: 'Volkswagen'})
 .subscribe(e => console.log(e))
 
@@ -117,7 +113,7 @@ GET /cars/1?brand=Volkswagen
 
 Performs a `POST` request, for example:
 
-```
+```javascript
 rx.all('cars').post({brand: 'Audi', name: 'A3'})
 .subscribe(e => console.log(e))
 
@@ -144,7 +140,7 @@ Performs a `TRACE` request
 
 This is useful when you need to do a custom request, not that we're adding query parameters and headers
 
-```
+```javascript
 rx.all('cars/1/audi')
 .setQueryParams({foo: 'bar'})
 .setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
@@ -157,7 +153,7 @@ This will do a `GET` request on `cars/1/audi?foo=bar` with a `Content-Type` head
 
 Output a `JSON` string of your RxRest element.
 
-```
+```javascript
 rx.one('cars', 1)
 .get()
 .subscribe(e => console.log(e.json()))
@@ -169,7 +165,7 @@ rx.one('cars', 1)
 
 This gives you the original object (ie: not an instance of RxRestItem or RxRestCollection):
 
-```
+```javascript
 rx.one('cars', 1)
 .get()
 .subscribe(e => console.log(e.plain()))
@@ -201,7 +197,7 @@ When setting one of those parameters, it'll be stored globally for every future 
 
 It is the base url prepending your routes. For example :
 
-```
+```javascript
 //set the url
 rxrest.baseURL = 'http://localhost/api'
 
@@ -214,7 +210,7 @@ rxrest.one('car', 1)
 
 This is the key storing your identifier in your api objects. It defaults to `id`.
 
-```
+```javascript
 rxrest.identifier = '@id'
 
 rxrest.one('car', 1)
@@ -226,7 +222,7 @@ rxrest.one('car', 1)
 
 Global headers to add to every request. Those will be overriden by local headers. Accepts an `Object` or an `Headers` instance.
 
-```
+```javascript
 const headers = new Headers()
 headers.set('Authorization', 'foobar')
 headers.set('Content-Type', 'application/json')
@@ -243,7 +239,7 @@ rxrest.all('cars')
 
 Global query parameters to add to every request. Those will be overriden by local query params. Accepts an `Object` or an `URLSearchParams` instance.
 
-```
+```javascript
 const params = new URLSearchParams()
 params.set('bearer', 'foobar')
 
@@ -269,7 +265,7 @@ To alter those states, you can add interceptors having the following signature:
 
 For example, let's alter the request and the response:
 
-```
+```javascript
 rxrest.requestInterceptors.push(function(request) {
   request.headers.set('foo', 'bar')
 })
@@ -292,7 +288,7 @@ Handlers allow you to transform the Body before or after a request is issued.
 
 In fact those are already set ([requestBodyHandler](), [responseBodyHandler]()), and you can override them if needed:
 
-```
+```javascript
 rxrest.requestBodyHandler = function(body) {}
 /**
  * should return Promise<Object|Object[]>
