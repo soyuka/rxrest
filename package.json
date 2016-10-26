@@ -1,7 +1,7 @@
 {
   "name": "rxrest",
   "version": "1.0.0",
-  "description": "",
+  "description": "Reactive rest library",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
