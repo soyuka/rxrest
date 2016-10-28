@@ -15,6 +15,7 @@ global.Request = Request
 global.FormData = require('form-data')
 
 const {RxRest, RxRestItem, RxRestCollection} = require('../lib/index.js')
+const {fetch} = require('../lib/fetch')
 let rxrest
 
 const temp = new RxRest()
@@ -371,5 +372,38 @@ describe('RxRest', function() {
     obs.unsubscribe()
 
     setTimeout(e => cb(), 50)
+  })
+
+  it('should chain query params', function(cb) {
+    let spy = chai.spy(function() {})
+
+    rxrest.requestInterceptors = [
+      function(request) {
+        spy()
+        expect(request.headers.get('Content-Type')).to.equal('application/x-www-form-urlencoded')
+        expect(request.method).to.equal('GET')
+      },
+    ]
+
+		rxrest.all('test')
+		.setQueryParams({foo: 'bar'})
+		.setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
+		.request('GET')
+    .subscribe(items => {
+      expect(items[0].foo).to.equal('bar')
+      expect(spy).to.have.been.called.exactly(1)
+      cb()
+    })
+  })
+
+  it('should use fetch with a string', function(cb) {
+    fetch('http://localhost:3333/test')
+    .subscribe(e => {
+      e.json()
+      .then(f => {
+        expect(f).to.deep.equal([{id: 3}])
+        cb()
+      })
+    })
   })
 })

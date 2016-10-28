@@ -101,7 +101,7 @@ RxRest automagically binds the id in the route, note that the identifier propert
 Performs a `GET` request, for example:
 
 ```javascript
-rx.one('cars', 1).get({brand: 'Volkswagen'})
+rxrest.one('cars', 1).get({brand: 'Volkswagen'})
 .subscribe(e => console.log(e))
 
 GET /cars/1?brand=Volkswagen
@@ -114,7 +114,7 @@ GET /cars/1?brand=Volkswagen
 Performs a `POST` request, for example:
 
 ```javascript
-rx.all('cars').post({brand: 'Audi', name: 'A3'})
+rxrest.all('cars').post({brand: 'Audi', name: 'A3'})
 .subscribe(e => console.log(e))
 
 > RxRestItem {id: 3, brand: 'Audi', name: 'A3'}
@@ -141,7 +141,7 @@ Performs a `TRACE` request
 This is useful when you need to do a custom request, not that we're adding query parameters and headers
 
 ```javascript
-rx.all('cars/1/audi')
+rxrest.all('cars/1/audi')
 .setQueryParams({foo: 'bar'})
 .setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
 .request('GET')
@@ -154,7 +154,7 @@ This will do a `GET` request on `cars/1/audi?foo=bar` with a `Content-Type` head
 Output a `JSON` string of your RxRest element.
 
 ```javascript
-rx.one('cars', 1)
+rxrest.one('cars', 1)
 .get()
 .subscribe(e => console.log(e.json()))
 
@@ -166,7 +166,7 @@ rx.one('cars', 1)
 This gives you the original object (ie: not an instance of RxRestItem or RxRestCollection):
 
 ```javascript
-rx.one('cars', 1)
+rxrest.one('cars', 1)
 .get()
 .subscribe(e => console.log(e.plain()))
 

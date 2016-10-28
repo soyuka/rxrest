@@ -67,10 +67,6 @@ export class RxRestConfiguration {
    * @returns {Promise<any>}
    */
   responseBodyHandler(body: Response): Promise<any> {
-    if (!body.ok) {
-      return Promise.reject(body)
-    }
-
     return body.text()
     .then(text => {
       try {
@@ -144,6 +140,15 @@ export class RxRest {
   }
 
   /**
+   * @access private
+   * @param {BodyParam} body
+   * @return {BodyParam|RxRestItem}
+   */
+  withBody(body: BodyParam) {
+    return body ? body : this
+  }
+
+  /**
    * post
    *
    * @param {Body|Blob|FormData|URLSearchParams|Object|RxRestItem} [body]
@@ -156,7 +161,7 @@ export class RxRest {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request('POST', body ? body : this)
+    return this.request('POST', this.withBody(body))
   }
 
   /**
@@ -202,7 +207,7 @@ export class RxRest {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request('PUT', body ? body : this)
+    return this.request('PUT', this.withBody(body))
   }
 
   /**
@@ -218,7 +223,7 @@ export class RxRest {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request('PATCH', body ? body : this)
+    return this.request('PATCH', this.withBody(body))
   }
 
   /**
