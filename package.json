@@ -2,7 +2,7 @@
   "name": "rxrest",
   "version": "1.0.1",
   "description": "RxRest a reactive REST utility",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
     "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
