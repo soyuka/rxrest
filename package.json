@@ -1,6 +1,6 @@
 {
   "name": "rxrest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RxRest a reactive REST utility",
   "main": "lib/index.js",
   "scripts": {
