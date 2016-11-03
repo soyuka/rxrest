@@ -1,6 +1,6 @@
 {
   "name": "rxrest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "RxRest a reactive REST utility",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,11 @@
     "test": "npm run build && ./node_modules/.bin/mocha",
     "build": "tsc"
   },
-  "keywords": ["REST", "Reactive", "Rxjs"],
+  "keywords": [
+    "REST",
+    "Reactive",
+    "Rxjs"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
