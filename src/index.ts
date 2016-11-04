@@ -856,3 +856,15 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
     return new RxRestCollection(this.$route, this.$elements)
   }
 }
+
+export class NewRxRest {
+  one(): RxRestItem {
+    let r = new RxRest()
+    return r.one.apply(r, arguments)
+  }
+
+  all(): RxRestCollection {
+    let r = new RxRest()
+    return r.all.apply(r, arguments)
+  }
+}

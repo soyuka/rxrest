@@ -14,9 +14,10 @@ global.Request = Request
 
 global.FormData = require('form-data')
 
-const {RxRest, RxRestItem, RxRestCollection} = require('../lib/index.js')
+const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require('../lib/index.js')
 const {fetch} = require('../lib/fetch')
 let rxrest
+const newRxRest = new NewRxRest()
 
 const temp = new RxRest()
 const RxRestRequestBodyHandler = temp.requestBodyHandler
@@ -404,6 +405,29 @@ describe('RxRest', function() {
         expect(f).to.deep.equal([{id: 3}])
         cb()
       })
+    })
+  })
+
+  it('should use a new instance', function(cb) {
+    let i = 0
+    newRxRest.all('test')
+    .get()
+    .concatMap(e => {
+      e.push(new RxRestItem('test', {id: 5}))
+      return e.map(item => newRxRest.one('test', item.id).get({foo: 'bar'}))
+    })
+    .flatMap(e => e)
+    .subscribe(e => {
+      if (i === 0) {
+        expect(e.id).to.equal(3)
+        expect(e.foo).to.equal('bar')
+        i++
+        return
+      }
+
+      expect(e.foo).to.equal('bar')
+      expect(e.id).to.equal(5)
+      cb()
     })
   })
 })
