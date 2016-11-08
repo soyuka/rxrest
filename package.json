@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
     "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
-    "test": "npm run build && ./node_modules/.bin/mocha",
+    "test": "npm run build && ./node_modules/.bin/mocha -b",
     "build": "tsc"
   },
   "keywords": [
@@ -30,7 +30,8 @@
     "typings": "^1.4.0"
   },
   "dependencies": {
-    "rxjs": "^5.0.0-beta.12",
+    "@most/create": "^2.0.1",
+    "most": "^1.0.5",
     "superagent": "^2.3.0"
   },
   "typings": "lib/index.d.ts"

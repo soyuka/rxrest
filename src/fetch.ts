@@ -1,9 +1,10 @@
 /// <reference path="interfaces.d.ts" />
 
 import * as superagent from 'superagent'
-import {Observable, Observer} from 'rxjs'
+import {Stream, fromPromise} from 'most'
+import {create} from '@most/create'
 
-export function fetch(input: string|Request, init?: RequestOptions): Observable<any> {
+export function fetch(input: string|Request, init?: RequestOptions): Stream<any> {
 
   if (!(input instanceof Request)) {
     input = new Request(input, init)
@@ -15,21 +16,22 @@ export function fetch(input: string|Request, init?: RequestOptions): Observable<
     req.set(header[0], header[1])
   }
 
-  return Observable.fromPromise(input.text())
+  return fromPromise(input.text())
   .flatMap(body => {
     req.send(body)
 
-    return Observable.create((observer: Observer<Response>) => {
+    return create((add, end, error) => {
       req.end(function(err: any, res: any) {
         if (err) {
           let response = new Response(err, err)
-          return observer.error(response)
+          response.message = response.statusText
+          return error(<Error> response)
         }
 
         let response = new Response(res.text, res)
 
-        observer.next(response)
-        observer.complete()
+        add(response)
+        end()
       })
 
       return function abort() {

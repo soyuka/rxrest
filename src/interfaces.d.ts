@@ -40,6 +40,7 @@ interface Response extends Body {
   ok: boolean;
   status: Number;
   statusText: string;
+  message: string;
   type: string;
   url: string;
   useFinalUrl: boolean;

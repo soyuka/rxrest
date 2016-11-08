@@ -1,5 +1,3 @@
-/// <reference path="../node_modules/typescript/lib/lib.es6.d.ts"/>
-
 import {RxRest, RxRestItem, RxRestCollection} from './index'
 
 export class RxRestProxyHandler implements ProxyHandler<RxRest> {

@@ -1,4 +1,4 @@
-const {Observable} = require('rxjs')
+const {combine, of, from} = require('most')
 const chai = require('chai')
 const spies = require('chai-spies')
 chai.use(spies)
@@ -83,7 +83,7 @@ describe('RxRest', function() {
 
     rxrest.one('test', 3)
     .get({foo: 'foo'}, {'Accept': 'application/json'})
-    .subscribe(function(item) {
+    .observe(item => {
       expect(item.$fromServer).to.be.true
       expect(item).to.be.an.instanceof(RxRestItem)
       expect(item.URL).to.equal('http://localhost:3333/test/3')
@@ -110,9 +110,8 @@ describe('RxRest', function() {
       expect(clone.plain()).to.deep.equal({bar: 'bar', id: 3, foobar: 'foobar'})
       expect(clone.$fromServer).to.equal(true)
       expect(clone.URL).to.equal('http://localhost:3333/test/3')
-
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should get one with global parameters', function(cb) {
@@ -121,14 +120,14 @@ describe('RxRest', function() {
 
     rxrest.one('test', 3)
     .get()
-    .subscribe(function(item) {
+    .observe((item) => {
       expect(item).to.be.an.instanceof(RxRestItem)
       expect(item.URL).to.equal('http://localhost:3333/test/3')
       expect(item.plain()).to.deep.equal({foo: 'bar', id: 3})
       expect(item).to.have.ownProperty('foo', 'bar')
       expect(item.headers.has('Accept')).to.be.true
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should get one with global parameters (from object)', function(cb) {
@@ -137,14 +136,14 @@ describe('RxRest', function() {
 
     rxrest.one('test', 3)
     .get()
-    .subscribe(function(item) {
+    .observe((item) => {
       expect(item).to.be.an.instanceof(RxRestItem)
       expect(item.URL).to.equal('http://localhost:3333/test/3')
       expect(item.plain()).to.deep.equal({foo: 'bar', id: 3})
       expect(item).to.have.ownProperty('foo', 'bar')
       expect(item.headers.has('Accept')).to.be.true
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should get all', function(cb) {
@@ -160,7 +159,7 @@ describe('RxRest', function() {
 
     rxrest.all('test')
     .getList(params, headers)
-    .subscribe(function(values) {
+    .observe((values) => {
 
       expect(values).to.be.an.instanceof(RxRestCollection)
       for (let item of values) {
@@ -178,9 +177,8 @@ describe('RxRest', function() {
 
       expect(clone[0].$fromServer).to.be.true
       expect(clone.plain()).to.deep.equal([{foo: 'bar', id: 3}])
-
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should add request interceptor', function(cb) {
@@ -190,7 +188,7 @@ describe('RxRest', function() {
       function(req) {
         spy()
         req.method = 'FOO'
-        return Observable.of(req)
+        return of(req)
       },
       function(req) {
         return new Promise((resolve, reject) => {
@@ -215,11 +213,11 @@ describe('RxRest', function() {
 
     rxrest.one('test', 3)
     .get()
-    .subscribe(function(value) {
+    .observe((value) => {
       expect(spy).to.have.been.called.exactly(4)
       expect(value.plain()).to.deep.equal({foo: 'bar', id: 3, bar: 'foo'})
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should save a resource', function(cb) {
@@ -231,10 +229,10 @@ describe('RxRest', function() {
       e.bar = 'foo'
       return e.save()
     })
-    .subscribe(e => {
+    .observe(e => {
       expect(e).to.deep.equal({bar: 'foo', id: 3, method: 'put'})
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should save a resource from object', function(cb) {
@@ -242,10 +240,10 @@ describe('RxRest', function() {
 
     rxrest.fromObject('test', {foo: 'bar'})
     .save()
-    .subscribe(e => {
+    .observe(e => {
       expect(e).to.deep.equal({foo: 'bar', id: 4, method: 'post'})
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should save a resource by using post', function(cb) {
@@ -253,10 +251,10 @@ describe('RxRest', function() {
 
     rxrest.one('test')
     .post({bar: 'foo'})
-    .subscribe(e => {
+    .observe(e => {
       expect(e).to.deep.equal({bar: 'foo', id: 4, method: 'post'})
-      cb()
-    }, cb)
+    })
+    .then(cb, cb)
   })
 
   it('should handle error', function(cb) {
@@ -269,10 +267,10 @@ describe('RxRest', function() {
 
     rxrest.one('404')
     .head()
-    .subscribe(e => {
+    .observe(e => {
       expect(spy).to.have.been.called
-      cb()
     })
+    .then(cb)
   })
 
   it('should create a collection from an array', function() {
@@ -284,31 +282,29 @@ describe('RxRest', function() {
     })
   })
 
-  it('should create a custom request', function(cb) {
+  it('should create a custom request', function() {
     rxrest.$route = ['test/3']
-    rxrest.request('GET')
-    .subscribe(e => {
+    return rxrest.request('GET')
+    .observe(e => {
       expect(e).to.be.an.instanceof(RxRestItem)
-      cb()
     })
   })
 
-  it('should get one and put', function(cb) {
-    rxrest.one('test', 3)
+  it('should get one and put', function() {
+    return rxrest.one('test', 3)
     .get()
     .flatMap(e => {
       e.foo = 'bar'
       return e.put()
     })
-    .subscribe(function(e) {
+    .observe(function(e) {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(e.method).to.equal('put')
       expect(e.foo).to.equal('bar')
-      cb()
-    }, cb)
+    })
   })
 
-  it('should change request/response body handlers', function(cb) {
+  it('should change request/response body handlers', function() {
     let spy = chai.spy(function() {})
 
     rxrest.requestBodyHandler = function(body) {
@@ -321,29 +317,23 @@ describe('RxRest', function() {
       return body.text()
     }
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .options()
-    .subscribe(e => {
+    .observe(e => {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(spy).to.have.been.called.exactly(2)
-      cb()
     })
   })
 
-  it('should delete and patch/trace one', function(cb) {
-    rxrest
+  it('should delete and patch/trace one', function() {
+    return rxrest
     .one('test', 3)
     .remove()
-    .subscribe(function(e) {
+    .observe(function(e) {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(e.method).to.equal('delete')
-      Observable.combineLatest(
-        e.patch(), e.trace()
-      )
-      .subscribe(function(e) {
-        cb()
-      }, cb)
-    }, cb)
+      return combine(e.patch(), e.trace())
+    })
   })
 
   it('should throw non-request errors', function(cb) {
@@ -354,20 +344,21 @@ describe('RxRest', function() {
     rxrest
     .one('test', 3)
     .get()
-    .subscribe(function(e) {
-    }, function(e) {
+    .observe(() => {})
+    .then(() => {}, (e) => {
       expect(e).to.be.an.instanceof(TypeError)
       cb()
     })
-
   })
 
   it('should abort a request', function(cb) {
     let obs = rxrest
     .one('test', 3)
     .get()
-    .subscribe(() => {
-      throw new Error('fail aborting')
+    .subscribe({
+      next: () => {
+        throw new TypeError('fail aborting')
+      }
     })
 
     obs.unsubscribe()
@@ -375,7 +366,7 @@ describe('RxRest', function() {
     setTimeout(e => cb(), 50)
   })
 
-  it('should chain query params', function(cb) {
+  it('should chain query params', function() {
     let spy = chai.spy(function() {})
 
     rxrest.requestInterceptors = [
@@ -386,20 +377,20 @@ describe('RxRest', function() {
       },
     ]
 
-		rxrest.all('test')
+		return rxrest.all('test')
 		.setQueryParams({foo: 'bar'})
 		.setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
 		.request('GET')
-    .subscribe(items => {
+    .observe(items => {
       expect(items[0].foo).to.equal('bar')
       expect(spy).to.have.been.called.exactly(1)
-      cb()
     })
   })
 
   it('should use fetch with a string', function(cb) {
+    let promise = null
     fetch('http://localhost:3333/test')
-    .subscribe(e => {
+    .observe(e => {
       e.json()
       .then(f => {
         expect(f).to.deep.equal([{id: 3}])
@@ -408,16 +399,17 @@ describe('RxRest', function() {
     })
   })
 
-  it('should use a new instance', function(cb) {
+  it('should use a new instance', function() {
     let i = 0
-    newRxRest.all('test')
+
+    return newRxRest.all('test')
     .get()
     .concatMap(e => {
       e.push(new RxRestItem('test', {id: 5}))
-      return e.map(item => newRxRest.one('test', item.id).get({foo: 'bar'}))
+      return from(e.map(item => newRxRest.one('test', item.id).get({foo: 'bar'})))
     })
     .flatMap(e => e)
-    .subscribe(e => {
+    .observe(e => {
       if (i === 0) {
         expect(e.id).to.equal(3)
         expect(e.foo).to.equal('bar')
@@ -427,7 +419,6 @@ describe('RxRest', function() {
 
       expect(e.foo).to.equal('bar')
       expect(e.id).to.equal(5)
-      cb()
     })
   })
 })
