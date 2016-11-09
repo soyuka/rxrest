@@ -291,18 +291,3 @@ rxrest.one('cars', 1)
 
 > RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
 ```
-
-### Handlers
-
-Handlers allow you to transform the Body before or after a request is issued.
-
-In fact those are already set ([requestBodyHandler](), [responseBodyHandler]()), and you can override them if needed:
-
-```javascript
-rxrest.requestBodyHandler = function(body) {}
-/**
- * should return Promise<Object|Object[]>
- * if the response is an error it rejects the promise
- */
-rxrest.responseBodyHandler = function(body) { }
-```
