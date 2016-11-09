@@ -1,15 +1,28 @@
 /// <reference path="interfaces.d.ts" />
 
-import {Stream, from, fromPromise, throwError, of} from 'most'
+import {Stream, from, throwError, of} from 'most'
 import {RxRestProxyHandler} from './RxRestProxyHandler'
 import {fetch} from './fetch'
+import {create} from '@most/create'
+
+const fromPromise = function(promise: Promise<any>) {
+  return create((add, end, error) => {
+    promise
+    .then((v) => {
+      add(v)
+      end()
+    })
+    .catch(error)
+  })
+}
+
 
 export interface RequestInterceptor {
-  (request: Request): Stream<Request>;
+  (request: Request): Stream<Request>|Promise<Request>|undefined|Request;
 }
 
 export interface ResponseInterceptor {
-  (response: RxRestCollection|RxRestItem): Stream<RxRestCollection|RxRestItem>;
+  (body: Body): Stream<Body|Object|undefined>|Promise<Body|Object|undefined>|undefined|Body;
 }
 
 export interface ErrorInterceptor {
@@ -67,6 +80,10 @@ export class RxRestConfiguration {
    * @returns {Promise<any>}
    */
   responseBodyHandler(body: Response): Promise<any> {
+    if (body.bodyUsed) {
+      return Promise.resolve(body.body)
+    }
+
     return body.text()
     .then(text => {
       try {
@@ -621,7 +638,7 @@ export class RxRest {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam): Stream<RxRestItem|RxRestCollection> {
+  request(method: string, body?: BodyParam): Stream<RxRestItem> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -630,32 +647,40 @@ export class RxRest {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    return of(request)
+    return <Stream<RxRestItem>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => fetch(request))
+    .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .flatMap(body => fromPromise(this.responseBodyHandler(body)))
-    .map(e => {
-      if (!Array.isArray(e)) {
+    .flatMap(body => {
+      if (!Array.isArray(body)) {
         let item: RxRestItem
 
         if (this instanceof RxRestItem) {
           item = this
-          item.element = e
+          item.element = body
         } else {
-          item = new RxRestItem(this.$route, e)
+          item = new RxRestItem(this.$route, body)
         }
 
         item.$fromServer = true
-        return item
+        return of(item)
       }
 
-      return new RxRestCollection(this.$route, e.map(e => {
+      let collection = new RxRestCollection(this.$route, body.map(e => {
         let item = new RxRestItem(this.$route, e)
         item.$fromServer = true
         return item
       }))
+
+      return create((add, end, error) => {
+        for (let item of collection) {
+          add(item)
+        }
+
+        end(collection)
+      })
     })
-    .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .recoverWith(body => {
       if (!(body instanceof Response)) {
         return throwError(<Error> body)

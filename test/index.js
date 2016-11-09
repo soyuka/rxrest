@@ -76,6 +76,31 @@ describe('RxRest', function() {
     rxrest.responseBodyHandler = RxRestResponseBodyHandler
   })
 
+  it('should use a new instance', function() {
+    let i = 0
+
+    return newRxRest.all('test')
+    .get()
+    .observe(e => {})
+    .then((data) => {
+      data.push(new RxRestItem('test', {id: 5}))
+
+      return from(data.map(item => newRxRest.one('test', item.id)))
+      .flatMap(item => item.get({foo: 'bar'}))
+      .observe(e => {
+        if (i === 0) {
+          expect(e.id).to.equal(3)
+          expect(e.foo).to.equal('bar')
+          i++
+          return
+        }
+
+        expect(e.foo).to.equal('bar')
+        expect(e.id).to.equal(5)
+      })
+    })
+  })
+
   it('should get one', function(cb) {
     rxrest.requestInterceptors.push(function(request) {
       expect(request.headers.has('Accept')).to.be.true
@@ -146,7 +171,7 @@ describe('RxRest', function() {
     .then(cb, cb)
   })
 
-  it('should get all', function(cb) {
+  it('should get all', function() {
     let params = new URLSearchParams()
     params.set('foo', 'bar')
 
@@ -157,10 +182,10 @@ describe('RxRest', function() {
       expect(request.headers.has('Accept')).to.be.true
     })
 
-    rxrest.all('test')
+    return rxrest.all('test')
     .getList(params, headers)
-    .observe((values) => {
-
+    .observe((item) => {})
+    .then(function(values) {
       expect(values).to.be.an.instanceof(RxRestCollection)
       for (let item of values) {
         expect(item).to.be.an.instanceof(RxRestItem)
@@ -178,7 +203,6 @@ describe('RxRest', function() {
       expect(clone[0].$fromServer).to.be.true
       expect(clone.plain()).to.deep.equal([{foo: 'bar', id: 3}])
     })
-    .then(cb, cb)
   })
 
   it('should add request interceptor', function(cb) {
@@ -206,9 +230,15 @@ describe('RxRest', function() {
     ]
 
     rxrest.responseInterceptors.push(function(response) {
-      spy()
-      expect(response).to.be.an.instanceof(RxRestItem)
-      response.bar = 'foo'
+      return response.text()
+      .then(e => {
+        let body = JSON.parse(e)
+        body.bar = 'foo'
+        response.body = body
+        spy()
+
+        return response
+      })
     })
 
     rxrest.one('test', 3)
@@ -337,15 +367,15 @@ describe('RxRest', function() {
   })
 
   it('should throw non-request errors', function(cb) {
-   rxrest.requestInterceptors.push(function(body) {
-     throw new TypeError('fail')
-   })
+    rxrest.requestInterceptors.push(function(body) {
+      throw TypeError('fail')
+    })
 
     rxrest
     .one('test', 3)
     .get()
     .observe(() => {})
-    .then(() => {}, (e) => {
+    .catch(e => {
       expect(e).to.be.an.instanceof(TypeError)
       cb()
     })
@@ -381,8 +411,8 @@ describe('RxRest', function() {
 		.setQueryParams({foo: 'bar'})
 		.setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
 		.request('GET')
-    .observe(items => {
-      expect(items[0].foo).to.equal('bar')
+    .observe(item => {
+      expect(item.foo).to.equal('bar')
       expect(spy).to.have.been.called.exactly(1)
     })
   })
@@ -399,26 +429,4 @@ describe('RxRest', function() {
     })
   })
 
-  it('should use a new instance', function() {
-    let i = 0
-
-    return newRxRest.all('test')
-    .get()
-    .concatMap(e => {
-      e.push(new RxRestItem('test', {id: 5}))
-      return from(e.map(item => newRxRest.one('test', item.id).get({foo: 'bar'})))
-    })
-    .flatMap(e => e)
-    .observe(e => {
-      if (i === 0) {
-        expect(e.id).to.equal(3)
-        expect(e.foo).to.equal('bar')
-        i++
-        return
-      }
-
-      expect(e.foo).to.equal('bar')
-      expect(e.id).to.equal(5)
-    })
-  })
 })

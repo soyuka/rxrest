@@ -47,6 +47,7 @@ interface Response extends Body {
   clone: () => Response;
   error: () => Response;
   redirect: (url: string, status: Number) => Response;
+  body: any;
 }
 
 declare var Response: Response;

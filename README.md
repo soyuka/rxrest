@@ -24,10 +24,13 @@ rxrest.baseURL = 'http://localhost/api'
 
 rxrest.all('cars')
 .getList()
-.subscribe(result => {
-  console.log(result)
+.observe(result => {
+  console.log(result) // RxRestItem
+})
+.then(collection => {
   /**
-   * outputs: RxRestCollection [
+   * `collection` is:
+   * RxRestCollection [
    *   RxRestItem { name: 'Polo', id: 1, brand: 'Audi' },
    *   RxRestItem { name: 'Golf', id: 2, brand: 'Volkswagen' }
    * ]
@@ -36,7 +39,7 @@ rxrest.all('cars')
   result[0].brand = 'Volkswagen'
 
   result[0].save()
-  .subscribe(result => {
+  .observe(result => {
     console.log(result)
     /**
      * outputs: RxRestItem { name: 'Polo', id: 1, brand: 'Volkswagen' }
@@ -52,7 +55,7 @@ This library uses a [`fetch`-like](https://developer.mozilla.org/en-US/docs/Web/
 Because it uses fetch, the RxRest library uses it's core concepts. It will add an `Object` compatibility layer to [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for query parameters and [Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers).
 It is also familiar with `Body`-like object, as `FormData`, `Response`, `Request` etc.
 
-This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `rxjs`. I wish to allow the use of other Reactive libraries in a near future.
+This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `most.js` for the reactive part.
 
 ## API
 
@@ -96,47 +99,47 @@ car.URL
 
 RxRest automagically binds the id in the route, note that the identifier property is configurable.
 
-#### `get(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `get(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `GET` request, for example:
 
 ```javascript
 rxrest.one('cars', 1).get({brand: 'Volkswagen'})
-.subscribe(e => console.log(e))
+.observe(e => console.log(e))
 
 GET /cars/1?brand=Volkswagen
 
 > RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
 
-#### `post(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `post(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `POST` request, for example:
 
 ```javascript
 rxrest.all('cars').post({brand: 'Audi', name: 'A3'})
-.subscribe(e => console.log(e))
+.observe(e => console.log(e))
 
 > RxRestItem {id: 3, brand: 'Audi', name: 'A3'}
 ```
 
-#### `remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `DELETE` request
 
-#### `patch(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `patch(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `PATCH` request
 
-#### `head(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `head(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `HEAD` request
 
-#### `trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<RxRestItem|RxRestCollection>`
+#### `trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
 
 Performs a `TRACE` request
 
-#### `request(method: string, body?: BodyParam): Observable<RxRestItem|RxRestCollection>`
+#### `request(method: string, body?: BodyParam): Stream<RxRestItem|RxRestCollection>`
 
 This is useful when you need to do a custom request, not that we're adding query parameters and headers
 
@@ -156,7 +159,7 @@ Output a `JSON` string of your RxRest element.
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.subscribe(e => console.log(e.json()))
+.observe(e => console.log(e.json()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -168,7 +171,7 @@ This gives you the original object (ie: not an instance of RxRestItem or RxRestC
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.subscribe(e => console.log(e.plain()))
+.observe(e => console.log(e.plain()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -179,7 +182,7 @@ Clones the current instance to a new one.
 
 ### RxRestCollection
 
-#### `getList(): Observable<RxRestCollection>`
+#### `getList(): Stream<RxRestCollection>`
 
 Just a reference to Restangular ;). It's an alias to `get()`.
 
@@ -259,9 +262,11 @@ You can add custom behaviors on every state of the request. In order those are:
   3. Error
 
 To alter those states, you can add interceptors having the following signature:
-  1. `requestInterceptor(request: Request): Observable<Request>|Promise<Request>|Request|undefined`
-  2. `responseInterceptor(request: RxRestItem|RxRestCollection): Observable<RxRestItem|RxRestCollection>|Promise<RxRestItem|RxRestCollection>|RxRestItem|RxRestCollection|undefined`
-  3. `errorInterceptor(error: Response): Observable<Response>|Promise<Response>|Response|undefined`
+  1. `requestInterceptor(request: Request)`
+  2. `responseInterceptor(request: Body)`
+  3. `errorInterceptor(error: Response)`
+
+Each of those can return a Stream, a Promise, their initial altered value, or be void (ie: return nothing).
 
 For example, let's alter the request and the response:
 
@@ -270,8 +275,13 @@ rxrest.requestInterceptors.push(function(request) {
   request.headers.set('foo', 'bar')
 })
 
-rxrest.responseInterceptors.push(function(response) {
-  response.foo = response.id
+rxrest.responseInterceptors.push(function(body) {
+  return body.text()
+  .then(data => {
+    data = JSON.parse(data)
+    data.foo = 'bar'
+    return data
+  })
 })
 
 // Performs a GET request with a 'foo' header having `bar` as value
