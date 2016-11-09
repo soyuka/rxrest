@@ -3,7 +3,7 @@ RxRest
 
 > A reactive REST utility
 
-Highly inspirated from [Restangular](https://github.com/mgonto/restangular), this library implements a natural way to interact with a REST API.
+Highly inspirated by [Restangular](https://github.com/mgonto/restangular), this library implements a natural way to interact with a REST API.
 
 ## Install
 
