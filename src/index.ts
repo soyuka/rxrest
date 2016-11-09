@@ -80,19 +80,9 @@ export class RxRestConfiguration {
    * @returns {Promise<any>}
    */
   responseBodyHandler(body: Response): Promise<any> {
-    if (body.bodyUsed) {
-      return Promise.resolve(body.body)
-    }
-
     return body.text()
     .then(text => {
-      try {
-        text = JSON.parse(text)
-      } catch (e) {
-        //silent catch
-      }
-
-      return Promise.resolve(text)
+      return JSON.parse(text)
     })
   }
 }

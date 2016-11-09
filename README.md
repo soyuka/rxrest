@@ -275,12 +275,14 @@ rxrest.requestInterceptors.push(function(request) {
   request.headers.set('foo', 'bar')
 })
 
-rxrest.responseInterceptors.push(function(body) {
-  return body.text()
+// This alters the body (note that ResponseBodyHandler below is more appropriate to do so)
+rxrest.responseInterceptors.push(function(response) {
+  return response.text(
   .then(data => {
     data = JSON.parse(data)
     data.foo = 'bar'
-    return data
+    //We can read the body only once (see Body.bodyUsed), here we return a new Response
+    return new Response(JSON.stringify(body), response)
   })
 })
 
@@ -290,4 +292,38 @@ rxrest.one('cars', 1)
 .get()
 
 > RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
+```
+
+### Handlers
+
+Handlers allow you to transform the Body before or after a request is issued.
+
+Those are the default values:
+
+```javascript
+/**
+ * This method transforms the requested body to a json string
+ */
+rxrest.requestBodyHandler = function(body) {
+  if (!body) {
+    return undefined
+  }
+
+  if (body instanceof FormData || body instanceof URLSearchParams) {
+    return body
+  }
+
+  return body instanceof RxRestItem ? body.json() : JSON.stringify(body)
+}
+
+/**
+ * This transforms the response in an Object (ie JSON.parse on the body text)
+ * should return Promise<Object|Object[]>
+ */
+rxrest.responseBodyHandler = function(body) {
+  return body.text()
+  .then(text => {
+    return JSON.parse(text)
+  })
+}
 ```

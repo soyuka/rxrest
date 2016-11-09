@@ -234,10 +234,9 @@ describe('RxRest', function() {
       .then(e => {
         let body = JSON.parse(e)
         body.bar = 'foo'
-        response.body = body
         spy()
 
-        return response
+        return new Response(JSON.stringify(body), response)
       })
     })
 
