@@ -637,7 +637,7 @@ export class RxRest {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    return <Stream<RxRestItem>> of(request)
+    let stream = <Stream<RxRestItem>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => fetch(request))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
@@ -682,6 +682,12 @@ export class RxRest {
       return of(body)
       .flatMap(this.expandInterceptors(Config.errorInterceptors))
     })
+
+    stream['then'] = function(resolve: (value?: any) => void) {
+      return stream.observe(e => {}).then(resolve)
+    }
+
+    return stream
   }
 }
 

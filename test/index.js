@@ -313,15 +313,16 @@ describe('RxRest', function() {
 
   it('should get one and put', function() {
     return rxrest.one('test', 3)
+    .setHeaders({'Content-Type': 'application/json'})
     .get()
-    .flatMap(e => {
+    .then(e => {
       e.foo = 'bar'
       return e.put()
-    })
-    .observe(function(e) {
-      expect(e).to.be.an.instanceof(RxRestItem)
-      expect(e.method).to.equal('put')
-      expect(e.foo).to.equal('bar')
+      .observe(function(e) {
+        expect(e).to.be.an.instanceof(RxRestItem)
+        expect(e.method).to.equal('put')
+        expect(e.foo).to.equal('bar')
+      })
     })
   })
 
@@ -417,6 +418,14 @@ describe('RxRest', function() {
         expect(f).to.deep.equal([{id: 3}])
         cb()
       })
+    })
+  })
+
+  it('should be promise compatible', function() {
+    return rxrest.one('test', 3).get()
+    .then(e => {
+      expect(e).to.be.an.instanceof(RxRestItem)
+      return Promise.resolve()
     })
   })
 
