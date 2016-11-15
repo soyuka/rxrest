@@ -11,7 +11,7 @@ Highly inspirated by [Restangular](https://github.com/mgonto/restangular), this 
 npm install rxrest --save
 ```
 
-Alpha!
+Alpha software!
 
 ## Example
 
@@ -36,9 +36,9 @@ rxrest.all('cars')
    * ]
    */
 
-  result[0].brand = 'Volkswagen'
+  collection[0].brand = 'Volkswagen'
 
-  result[0].save()
+  collection[0].save()
   .observe(result => {
     console.log(result)
     /**
@@ -56,6 +56,19 @@ Because it uses fetch, the RxRest library uses it's core concepts. It will add a
 It is also familiar with `Body`-like object, as `FormData`, `Response`, `Request` etc.
 
 This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `most.js` for the reactive part.
+
+## Promise compatibility
+
+Sometimes you don't need to subscribe/observe the response. To do so, you can get a promise and skip the observable part:
+
+```javascript
+
+rxrest.one('foo')
+.get()
+.then(item => {
+  console.log(item)
+})
+```
 
 ## API
 
