@@ -101,12 +101,12 @@ describe('RxRest', function() {
     })
   })
 
-  it('should get one', function(cb) {
+  it('should get one', function() {
     rxrest.requestInterceptors.push(function(request) {
       expect(request.headers.has('Accept')).to.be.true
     })
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .get({foo: 'foo'}, {'Accept': 'application/json'})
     .observe(item => {
       expect(item.$fromServer).to.be.true
@@ -136,14 +136,13 @@ describe('RxRest', function() {
       expect(clone.$fromServer).to.equal(true)
       expect(clone.URL).to.equal('http://localhost:3333/test/3')
     })
-    .then(cb, cb)
   })
 
-  it('should get one with global parameters', function(cb) {
+  it('should get one with global parameters', function() {
     rxrest.queryParams.set('foo', 'bar')
     rxrest.headers.set('Accept', 'application/json')
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .get()
     .observe((item) => {
       expect(item).to.be.an.instanceof(RxRestItem)
@@ -152,14 +151,13 @@ describe('RxRest', function() {
       expect(item).to.have.ownProperty('foo', 'bar')
       expect(item.headers.has('Accept')).to.be.true
     })
-    .then(cb, cb)
   })
 
-  it('should get one with global parameters (from object)', function(cb) {
+  it('should get one with global parameters (from object)', function() {
     rxrest.queryParams = {foo: 'bar'}
     rxrest.headers = {'Accept': 'application/json'}
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .get()
     .observe((item) => {
       expect(item).to.be.an.instanceof(RxRestItem)
@@ -168,7 +166,6 @@ describe('RxRest', function() {
       expect(item).to.have.ownProperty('foo', 'bar')
       expect(item.headers.has('Accept')).to.be.true
     })
-    .then(cb, cb)
   })
 
   it('should get all', function() {
@@ -205,7 +202,7 @@ describe('RxRest', function() {
     })
   })
 
-  it('should add request interceptor', function(cb) {
+  it('should add request interceptor', function() {
     let spy = chai.spy(function() {})
 
     rxrest.requestInterceptors = [
@@ -240,19 +237,18 @@ describe('RxRest', function() {
       })
     })
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .get()
     .observe((value) => {
       expect(spy).to.have.been.called.exactly(4)
       expect(value.plain()).to.deep.equal({foo: 'bar', id: 3, bar: 'foo'})
     })
-    .then(cb, cb)
   })
 
-  it('should save a resource', function(cb) {
+  it('should save a resource', function() {
     rxrest.headers.set('Content-Type', 'application/json')
 
-    rxrest.one('test', 3)
+    return rxrest.one('test', 3)
     .get()
     .flatMap(e => {
       e.bar = 'foo'
@@ -261,32 +257,29 @@ describe('RxRest', function() {
     .observe(e => {
       expect(e).to.deep.equal({bar: 'foo', id: 3, method: 'put'})
     })
-    .then(cb, cb)
   })
 
-  it('should save a resource from object', function(cb) {
+  it('should save a resource from object', function() {
     rxrest.headers.set('Content-Type', 'application/json')
 
-    rxrest.fromObject('test', {foo: 'bar'})
+    return rxrest.fromObject('test', {foo: 'bar'})
     .save()
     .observe(e => {
       expect(e).to.deep.equal({foo: 'bar', id: 4, method: 'post'})
     })
-    .then(cb, cb)
   })
 
-  it('should save a resource by using post', function(cb) {
+  it('should save a resource by using post', function() {
     rxrest.headers.set('Content-Type', 'application/json')
 
-    rxrest.one('test')
+    return rxrest.one('test')
     .post({bar: 'foo'})
     .observe(e => {
       expect(e).to.deep.equal({bar: 'foo', id: 4, method: 'post'})
     })
-    .then(cb, cb)
   })
 
-  it('should handle error', function(cb) {
+  it('should handle error', function() {
     let spy = chai.spy(function() {})
 
     rxrest.errorInterceptors.push(function(response) {
@@ -294,12 +287,11 @@ describe('RxRest', function() {
       spy()
     })
 
-    rxrest.one('404')
+    return rxrest.one('404')
     .head()
     .observe(e => {
       expect(spy).to.have.been.called
     })
-    .then(cb)
   })
 
   it('should create a collection from an array', function() {

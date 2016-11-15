@@ -654,7 +654,10 @@ export class RxRest {
         }
 
         item.$fromServer = true
-        return of(item)
+        return create((add, end, error) => {
+          add(item)
+          end(item)
+        })
       }
 
       let collection = new RxRestCollection(this.$route, body.map(e => {
