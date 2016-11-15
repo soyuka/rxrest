@@ -1,4 +1,4 @@
-RxRest
+RxRest [![Build Status](https://travis-ci.org/soyuka/rxrest.svg?branch=master)](https://travis-ci.org/soyuka/rxrest)
 ======
 
 > A reactive REST utility
