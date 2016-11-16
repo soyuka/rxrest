@@ -2,7 +2,7 @@
 
 import {Stream, from, throwError, of} from 'most'
 import {RxRestProxyHandler} from './RxRestProxyHandler'
-import {fetch} from './fetch'
+import {fetch as superAgentFetch} from './fetch'
 import {create} from '@most/create'
 
 const fromPromise = function(promise: Promise<any>) {
@@ -50,6 +50,7 @@ export class RxRestConfiguration {
   errorInterceptors: ErrorInterceptor[] = []
   headers: Headers = new Headers()
   queryParams: URLSearchParams = new URLSearchParams()
+  fetch: any;
 
   /**
    * requestBodyHandler
@@ -590,6 +591,14 @@ export class RxRest {
     return Config.responseBodyHandler
   }
 
+  get fetch(): any {
+    return Config.fetch ? Config.fetch : superAgentFetch
+  }
+
+  set fetch(fn: any) {
+    Config.fetch = fn
+  }
+
   /**
    * expandInterceptors
    *
@@ -639,7 +648,7 @@ export class RxRest {
 
     let stream = <Stream<RxRestItem>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
-    .flatMap(request => fetch(request))
+    .flatMap(request => this.fetch(request))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .flatMap(body => fromPromise(this.responseBodyHandler(body)))
     .flatMap(body => {
