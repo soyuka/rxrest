@@ -1,5 +1,4 @@
-/// <reference path="interfaces.d.ts" />
-
+import {Request, RequestOptions, Headers, Response, ErrorResponse} from './interfaces'
 import * as superagent from 'superagent'
 import {Stream, fromPromise} from 'most'
 import {create} from '@most/create'
@@ -25,7 +24,7 @@ export function fetch(input: string|Request, init?: RequestOptions): Stream<any>
         if (err) {
           let response = new Response(err, err)
           response.message = response.statusText
-          return error(<Error> response)
+          return error(<ErrorResponse> response)
         }
 
         let response = new Response(res.text, res)

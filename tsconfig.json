@@ -14,9 +14,11 @@
     "indentSize": 2,
     "tabSize": 2
   },
-   "files": [
-     "src/interfaces.d.ts",
-     "src/fetch.ts",
-     "src/index.ts"
-   ]
+  "files": [
+    "superagent.d.ts",
+    "src/index.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
