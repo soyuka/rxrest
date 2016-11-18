@@ -1,15 +1,14 @@
 import {Stream} from 'most'
 
 export interface RxRestItemInterface {
-
 }
 
 export interface RequestInterceptor {
-  (request: Request): Stream<Request>|Promise<Request>|undefined|Request;
+  (request: Request): Stream<Request>|Promise<Request>|undefined|Request|void;
 }
 
 export interface ResponseInterceptor {
-  (body: Body): Stream<Body|Object|undefined>|Promise<Body|Object|undefined>|undefined|Body;
+  (body: Body): Stream<Body|Object|undefined>|Promise<Body|Object|undefined>|undefined|Body|void;
 }
 
 export interface ErrorInterceptor {
