@@ -340,3 +340,7 @@ rxrest.responseBodyHandler = function(body) {
   })
 }
 ```
+
+### TODO
+
+This library should work with whatever reactive stream is available (ie let the user choose it's favourite library)
