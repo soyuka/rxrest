@@ -1,21 +1,17 @@
-interface Headers extends Map<string, string> {
-  new (init?: Object): Headers;
+declare class Headers extends Map<string, string> {
+  constructor (init?: Object);
   append: (name: string, value: string) => void;
   getAll: () => Object[];
 }
 
-declare var Headers: Headers;
-
-interface URLSearchParams extends Map<string, string> {
-  new (init?: string|URLSearchParams): URLSearchParams;
+declare class URLSearchParams extends Map<string, string> {
+  constructor (init?: string|URLSearchParams);
   append: (name: string, value: string) => void;
   getAll: () => string[];
   toString: () => string;
 }
 
-declare var URLSearchParams: URLSearchParams;
-
-interface Body {
+declare class Body {
   bodyUsed?: boolean;
   arrayBuffer: () => Promise<ArrayBuffer>;
   blob: () => Promise<Blob>;
@@ -23,8 +19,6 @@ interface Body {
   json: () => Promise<Object>;
   text: () => Promise<string>;
 }
-
-declare var Body: Body;
 
 interface ResponseParams {
   status: Number;
@@ -34,8 +28,8 @@ interface ResponseParams {
 
 declare var ResponseParams: ResponseParams;
 
-interface Response extends Body {
-  new(body?: Blob|FormData|URLSearchParams|string, init?: ResponseParams): Response;
+declare class Response extends Body {
+  constructor(body?: Blob|FormData|URLSearchParams|string, init?: ResponseParams);
   headers: Headers;
   ok: boolean;
   status: Number;
@@ -50,9 +44,11 @@ interface Response extends Body {
   body: any;
 }
 
-declare var Response: Response;
+declare class ErrorResponse extends Response {
+  name: string;
+}
 
-interface RequestOptions {
+declare class RequestOptions {
   method: string;
   headers?: Headers;
   body?: Body|Blob|FormData|URLSearchParams|Object;
@@ -64,22 +60,18 @@ interface RequestOptions {
   integrity?: string;
 }
 
-declare var RequestOptions: RequestOptions;
-
-interface Request extends Body {
-  method: string,
-  url: string,
-  headers?: Object,
-  referrer?: string,
-  referrerPolicy?: string,
-  mode?: string,
-  credentials?: string,
-  cache?: string,
-  clone: () => Request,
-  new (input: string|Request, init?: RequestOptions): Request
+declare class Request extends Body {
+  constructor (input: string|Request, init?: RequestOptions);
+  method: string;
+  url: string;
+  headers?: Object;
+  referrer?: string;
+  referrerPolicy?: string;
+  mode?: string;
+  credentials?: string;
+  cache?: string;
+  clone: () => Request;
 }
-
-declare var Request: Request;
 
 declare var fetch: (input: string|Request, init?: RequestOptions) => Promise<Response>;
 
