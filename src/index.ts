@@ -209,6 +209,11 @@ export class NewRxRest {
     let r = new RxRest()
     return r.all.apply(r, arguments)
   }
+
+  fromObject(): RxRestItem|RxRestCollection {
+    let r = new RxRest()
+    return r.fromObject.apply(r, arguments)
+  }
 }
 
 export {RxRest}
