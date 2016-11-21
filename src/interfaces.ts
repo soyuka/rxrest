@@ -12,7 +12,7 @@ export interface ResponseInterceptor {
 }
 
 export interface ErrorInterceptor {
-  (response: Response): Stream<Response>;
+  (response: Response): Stream<Response>|void|Response|Promise<Response>;
 }
 
 export type BodyParam = RxRestItemInterface|FormData|URLSearchParams|Body|Blob|undefined|Object;

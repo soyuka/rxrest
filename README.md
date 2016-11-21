@@ -341,6 +341,10 @@ rxrest.responseBodyHandler = function(body) {
 }
 ```
 
+## Test
+
+Testing can be done using [`rxrest-assert`](https://github.com/soyuka/rxrest-assert).
+
 ### TODO
 
 This library should work with whatever reactive stream is available (ie let the user choose it's favourite library)
