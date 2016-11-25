@@ -58,6 +58,10 @@ describe('RxRest', function() {
       res.json({'method': 'delete'})
     })
 
+    app.get('/error', function(req, res) {
+      res.status(500).send('fail')
+    })
+
     app.listen(3333, cb)
   })
 
@@ -426,6 +430,14 @@ describe('RxRest', function() {
     .then(e => {
       expect(e).to.be.an.instanceof(RxRestItem)
       return Promise.resolve()
+    })
+  })
+
+  it('should error properly', function(cb) {
+    fetch('http://localhost:3333/error')
+    .observe(e => {})
+    .catch(e => {
+      cb()
     })
   })
 

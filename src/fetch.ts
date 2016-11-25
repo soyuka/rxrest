@@ -23,7 +23,7 @@ export function fetch(input: string|Request, init?: RequestOptions): Stream<any>
     return create((add, end, error) => {
       req.end(function(err: any, res: any) {
         if (err) {
-          let response = new Response(err, err)
+          let response = new Response(err, res)
           response.message = response.statusText
           return error(<ErrorResponse> response)
         }
