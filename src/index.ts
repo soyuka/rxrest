@@ -200,19 +200,19 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
 }
 
 export class NewRxRest {
-  one(): RxRestItem {
+  one(route: string, id: any): RxRestItem {
     let r = new RxRest()
-    return r.one.apply(r, arguments)
+    return r.one.call(r, route, id)
   }
 
-  all(): RxRestCollection {
+  all(route: string): RxRestCollection {
     let r = new RxRest()
-    return r.all.apply(r, arguments)
+    return r.all.call(r, route)
   }
 
-  fromObject(): RxRestItem|RxRestCollection {
+  fromObject(route: string, element: Object|Object[]): RxRestItem|RxRestCollection {
     let r = new RxRest()
-    return r.fromObject.apply(r, arguments)
+    return r.fromObject.call(r, route, element)
   }
 }
 
