@@ -7,6 +7,10 @@ import {fetch as superAgentFetch} from './fetch'
 import {Stream, from, throwError, of} from 'most'
 import {create} from '@most/create'
 
+export interface PromisableStream<T> extends Stream<T> {
+  then: (resolve: (value?: any) => void) => void
+}
+
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
     promise
@@ -567,7 +571,7 @@ export class RxRest {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam): Stream<RxRestItem> {
+  request(method: string, body?: BodyParam): PromisableStream<RxRestItem> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -576,7 +580,7 @@ export class RxRest {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    let stream = <Stream<RxRestItem>> of(request)
+    let stream = <PromisableStream<RxRestItem>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => this.fetch(request))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
