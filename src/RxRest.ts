@@ -99,7 +99,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   post(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -114,7 +114,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -129,7 +129,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -145,7 +145,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   put(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -161,7 +161,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   patch(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -176,7 +176,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -191,7 +191,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -206,7 +206,7 @@ export class RxRest {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
