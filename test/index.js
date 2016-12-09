@@ -441,4 +441,16 @@ describe('RxRest', function() {
     })
   })
 
+  it('should create a resource without id', function() {
+    let item = rxrest.one('test')
+    item.foo = 'bar'
+
+    return item.save()
+    .then(e => {
+      expect(e).to.have.property('foo', 'bar')
+      expect(e.$route).to.deep.equal(['test', 4])
+      return e
+    })
+  })
+
 })

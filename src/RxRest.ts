@@ -50,10 +50,13 @@ export class RxRest {
    * @param {any} id
    * @returns {RxRestItem}
    */
-  one(route: string, id: any): RxRestItem {
+  one(route: string, id?: any): RxRestItem {
     this.addRoute(route)
     let o = {}
-    o[this.identifier] = id
+    if (id) {
+      o[this.identifier] = id
+    }
+
     return new RxRestItem(this.$route, o)
   }
 
@@ -278,7 +281,7 @@ export class RxRest {
     this.$queryParams = new URLSearchParams()
 
     for (let i in params) {
-      this.$queryParams.set(i, params[i])
+      this.$queryParams.append(i, params[i])
     }
   }
 
@@ -320,10 +323,15 @@ export class RxRest {
       return
     }
 
+    if (typeof params === 'string') {
+      Config.queryParams = new URLSearchParams(params)
+      return
+    }
+
     Config.queryParams = new URLSearchParams()
 
     for (let i in params) {
-      Config.queryParams.set(i, params[i])
+      Config.queryParams.append(i, params[i])
     }
   }
 
@@ -345,11 +353,11 @@ export class RxRest {
     let params = new URLSearchParams()
 
     for (let param of this.queryParams) {
-      params.set(param[0], param[1])
+      params.append(param[0], param[1])
     }
 
     for (let param of this.localQueryParams) {
-      params.set(param[0], param[1])
+      params.append(param[0], param[1])
     }
 
     let str = params.toString()
@@ -378,7 +386,7 @@ export class RxRest {
     this.$headers = new Headers()
 
     for (let i in params) {
-      this.$headers.set(i, params[i])
+      this.$headers.append(i, params[i])
     }
  }
 
@@ -403,7 +411,7 @@ export class RxRest {
     Config.headers = new Headers()
 
     for (let i in params) {
-      Config.headers.set(i, params[i])
+      Config.headers.append(i, params[i])
     }
  }
 
@@ -426,11 +434,11 @@ export class RxRest {
     let headers = new Headers()
 
     for (let header of this.headers) {
-      headers.set(header[0], header[1])
+      headers.append(header[0], header[1])
     }
 
     for (let header of this.localHeaders) {
-      headers.set(header[0], header[1])
+      headers.append(header[0], header[1])
     }
 
     return headers

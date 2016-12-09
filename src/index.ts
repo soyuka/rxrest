@@ -200,7 +200,7 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
 }
 
 export class NewRxRest {
-  one(route: string, id: any): RxRestItem {
+  one(route: string, id?: any): RxRestItem {
     let r = new RxRest()
     return r.one.call(r, route, id)
   }
