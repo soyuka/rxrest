@@ -3,7 +3,7 @@
 import {Stream} from 'most'
 import {RxRestProxyHandler} from './RxRestProxyHandler'
 import {BodyParam, RxRestItemInterface} from './interfaces'
-import {RxRest} from './RxRest'
+import {RxRest, PromisableStream} from './RxRest'
 
 export class RxRestItem extends RxRest implements RxRestItemInterface {
   protected $element: Object = {};
@@ -143,7 +143,7 @@ export class RxRestCollection extends RxRest implements Iterable<RxRestItem> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   getList(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem|RxRestCollection> {
+    PromisableStream<RxRestItem|RxRestCollection> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
