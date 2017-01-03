@@ -11,8 +11,6 @@ Highly inspirated by [Restangular](https://github.com/mgonto/restangular), this 
 npm install rxrest --save
 ```
 
-Alpha software!
-
 ## Example
 
 ```javascript
@@ -48,6 +46,17 @@ rxrest.all('cars')
 })
 ```
 
+## Menu
+
+-  [Technical concepts](#technical-concepts)
+-  [Promise compatibility](#promise-compatibility)
+-  [Configuration](#configuration)
+-  [Instance lifecycle](#instance-lifecycle)
+-  [Interceptors](#interceptors)
+-  [Handlers](#handlers)
+-  [API](#api)
+-  [Angular 2 configuration example](#angular-2-configuration-example)
+
 ## Technical concepts
 
 This library uses a [`fetch`-like](https://developer.mozilla.org/en-US/docs/Web/API/GlobalFetch) library to perform HTTP requests. It has the same api as fetch but uses XMLHttpRequest so that requests have a cancellable ability! It also makes use of [`Proxy`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/Proxy) and implements an [`Iterator`](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/iterateurs_et_generateurs) on `RxRestCollection`.
@@ -69,6 +78,179 @@ rxrest.one('foo')
   console.log(item)
 })
 ```
+
+## Configuration
+
+When setting one of those parameters, it'll be stored globally for every future request made with RxRest.
+
+#### `baseURL`
+
+It is the base url prepending your routes. For example :
+
+```javascript
+//set the url
+rxrest.baseURL = 'http://localhost/api'
+
+//this will request GET http://localhost/api/car/1
+rxrest.one('car', 1)
+.get()
+```
+
+#### `identifier='id'`
+
+This is the key storing your identifier in your api objects. It defaults to `id`.
+
+```javascript
+rxrest.identifier = '@id'
+
+rxrest.one('car', 1)
+
+> RxRestItem { '@id': 1 }
+```
+
+#### `headers`
+
+Global headers to add to every request. Those will be overriden by local headers. Accepts an `Object` or an `Headers` instance.
+
+```javascript
+const headers = new Headers()
+headers.set('Authorization', 'foobar')
+headers.set('Content-Type', 'application/json')
+
+// Performs a GET request on /cars/1 with Authorization and an `application/json` content type header
+rxrest.one('cars', 1).get()
+
+// Performs a POST request on /cars with Authorization and an `application/x-www-form-urlencoded` content type header
+rxrest.all('cars')
+.post(new FormData(), null, {'Content-Type': 'application/x-www-form-urlencoded'})
+```
+
+#### `queryParams`
+
+Global query parameters to add to every request. Those will be overriden by local query params. Accepts an `Object` or an `URLSearchParams` instance.
+
+```javascript
+const params = new URLSearchParams()
+params.set('bearer', 'foobar')
+
+// Performs a GET request on /cars/1?bearer=foobar
+rxrest.one('cars', 1).get()
+
+// Performs a GET request on /cars?bearer=barfoo
+rxrest.all('cars')
+.get({bearer: 'barfoo'})
+```
+
+## Instance lifecycle
+
+As a resource evolves through time, when an instance of RxRest is created, it'll always have the same basis.
+
+For example you might try to do something like this:
+
+```javascript
+const rxrest = new RxRest()
+
+rxrest.all('buses')
+.observe(() => {
+  //do something
+
+  //Here, your RxRest item will have the following url: `/buses/cars/1`
+  rxrest.one('cars/1')
+})
+```
+
+If you want that rxrest creates a new instance every time you use `one` or `all`, you should rather use `NewRxRest`:
+
+```javascript
+import { RxRest, NewRxRest } from 'rxrest'
+
+const RxRestConfig = new RxRest()
+RxRestConfig.baseURL = 'http://localhost/api'
+
+const rxrest = new NewRxRest()
+
+rxrest.all('buses')
+.observe(() => {
+  //do something on /cars/1
+  rxrest.one('cars/1')
+})
+```
+
+## Interceptors
+
+You can add custom behaviors on every state of the request. In order those are:
+  1. Request
+  2. Response
+  3. Error
+
+To alter those states, you can add interceptors having the following signature:
+  1. `requestInterceptor(request: Request)`
+  2. `responseInterceptor(request: Body)`
+  3. `errorInterceptor(error: Response)`
+
+Each of those can return a Stream, a Promise, their initial altered value, or be void (ie: return nothing).
+
+For example, let's alter the request and the response:
+
+```javascript
+rxrest.requestInterceptors.push(function(request) {
+  request.headers.set('foo', 'bar')
+})
+
+// This alters the body (note that ResponseBodyHandler below is more appropriate to do so)
+rxrest.responseInterceptors.push(function(response) {
+  return response.text(
+  .then(data => {
+    data = JSON.parse(data)
+    data.foo = 'bar'
+    //We can read the body only once (see Body.bodyUsed), here we return a new Response
+    return new Response(JSON.stringify(body), response)
+  })
+})
+
+// Performs a GET request with a 'foo' header having `bar` as value
+
+rxrest.one('cars', 1)
+.get()
+
+> RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
+```
+
+## Handlers
+
+Handlers allow you to transform the Body before or after a request is issued.
+
+Those are the default values:
+
+```javascript
+/**
+ * This method transforms the requested body to a json string
+ */
+rxrest.requestBodyHandler = function(body) {
+  if (!body) {
+    return undefined
+  }
+
+  if (body instanceof FormData || body instanceof URLSearchParams) {
+    return body
+  }
+
+  return body instanceof RxRestItem ? body.json() : JSON.stringify(body)
+}
+
+/**
+ * This transforms the response in an Object (ie JSON.parse on the body text)
+ * should return Promise<Object|Object[]>
+ */
+rxrest.responseBodyHandler = function(body) {
+  return body.text()
+  .then(text => {
+    return JSON.parse(text)
+  })
+}
+```
+
+[Here is an example](https://gist.github.com/soyuka/f58ae748d7010d625d981d24be6210ae) where handlers are used to parse JSON-Ld in combination with [api-platform](https://github.com/api-platform/api-platform).
 
 ## API
 
@@ -154,7 +336,7 @@ Performs a `TRACE` request
 
 #### `request(method: string, body?: BodyParam): Stream<RxRestItem|RxRestCollection>`
 
-This is useful when you need to do a custom request, not that we're adding query parameters and headers
+This is useful when you need to do a custom request, note that we're adding query parameters and headers
 
 ```javascript
 rxrest.all('cars/1/audi')
@@ -205,146 +387,30 @@ Just a reference to Restangular ;). It's an alias to `get()`.
 
 Do a `POST` or a `PUT` request according to whether the resource came from the server or not. This is due to an internal property `fromServer`, which is set when parsing the request result.
 
-## Configuration
-
-When setting one of those parameters, it'll be stored globally for every future request made with RxRest.
-
-#### `baseURL`
-
-It is the base url prepending your routes. For example :
+## Angular 2 configuration example
 
 ```javascript
-//set the url
-rxrest.baseURL = 'http://localhost/api'
+import { ApplicationRef } from '@angular/core';
+import { RxRest, NewRxRest } from 'rxrest'
+import { baseURL } from './config'
 
-//this will request GET http://localhost/api/car/1
-rxrest.one('car', 1)
-.get()
-```
+const rxrest = new RxRest()
+rxrest.baseURL = baseURL + '/api'
 
-#### `identifier='id'`
-
-This is the key storing your identifier in your api objects. It defaults to `id`.
-
-```javascript
-rxrest.identifier = '@id'
-
-rxrest.one('car', 1)
-
-> RxRestItem { '@id': 1 }
-```
-
-#### `headers`
-
-Global headers to add to every request. Those will be overriden by local headers. Accepts an `Object` or an `Headers` instance.
-
-```javascript
-const headers = new Headers()
-headers.set('Authorization', 'foobar')
-headers.set('Content-Type', 'application/json')
-
-// Performs a GET request on /cars/1 with Authorization and an `application/json` content type header
-rxrest.one('cars', 1).get()
-
-// Performs a POST request on /cars with Authorization and an `application/x-www-form-urlencoded` content type header
-rxrest.all('cars')
-.post(new FormData(), null, {'Content-Type': 'application/x-www-form-urlencoded'})
-```
-
-#### `queryParams`
-
-Global query parameters to add to every request. Those will be overriden by local query params. Accepts an `Object` or an `URLSearchParams` instance.
-
-```javascript
-const params = new URLSearchParams()
-params.set('bearer', 'foobar')
-
-// Performs a GET request on /cars/1?bearer=foobar
-rxrest.one('cars', 1).get()
-
-// Performs a GET request on /cars?bearer=barfoo
-rxrest.all('cars')
-.get({bearer: 'barfoo'})
-```
-
-### Interceptors
-
-You can add custom behaviors on every state of the request. In order those are:
-  1. Request
-  2. Response
-  3. Error
-
-To alter those states, you can add interceptors having the following signature:
-  1. `requestInterceptor(request: Request)`
-  2. `responseInterceptor(request: Body)`
-  3. `errorInterceptor(error: Response)`
-
-Each of those can return a Stream, a Promise, their initial altered value, or be void (ie: return nothing).
-
-For example, let's alter the request and the response:
-
-```javascript
-rxrest.requestInterceptors.push(function(request) {
-  request.headers.set('foo', 'bar')
+@NgModule({
+  //...
+  providers: [
+    //...
+    {provide: NewRxRest, useClass: NewRxRest},
+    {provide: 'RxRestInstance', useValue: rxrest},
+  ]
 })
-
-// This alters the body (note that ResponseBodyHandler below is more appropriate to do so)
-rxrest.responseInterceptors.push(function(response) {
-  return response.text(
-  .then(data => {
-    data = JSON.parse(data)
-    data.foo = 'bar'
-    //We can read the body only once (see Body.bodyUsed), here we return a new Response
-    return new Response(JSON.stringify(body), response)
-  })
-})
-
-// Performs a GET request with a 'foo' header having `bar` as value
-
-rxrest.one('cars', 1)
-.get()
-
-> RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
-```
-
-### Handlers
-
-Handlers allow you to transform the Body before or after a request is issued.
-
-Those are the default values:
-
-```javascript
-/**
- * This method transforms the requested body to a json string
- */
-rxrest.requestBodyHandler = function(body) {
-  if (!body) {
-    return undefined
-  }
-
-  if (body instanceof FormData || body instanceof URLSearchParams) {
-    return body
-  }
-
-  return body instanceof RxRestItem ? body.json() : JSON.stringify(body)
-}
-
-/**
- * This transforms the response in an Object (ie JSON.parse on the body text)
- * should return Promise<Object|Object[]>
- */
-rxrest.responseBodyHandler = function(body) {
-  return body.text()
-  .then(text => {
-    return JSON.parse(text)
-  })
-}
 ```
 
 ## Test
 
 Testing can be done using [`rxrest-assert`](https://github.com/soyuka/rxrest-assert).
 
-### TODO
+## Licence
 
-This library should work with whatever reactive stream is available (ie let the user choose it's favourite library)
+MIT
