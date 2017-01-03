@@ -66,6 +66,8 @@ It is also familiar with `Body`-like object, as `FormData`, `Response`, `Request
 
 This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `most.js` for the reactive part.
 
+<sup>[^ Back to menu](#menu)</sup>
+
 ## Promise compatibility
 
 Sometimes you don't need to subscribe/observe the response. To do so, you can get a promise and skip the observable part:
@@ -78,6 +80,8 @@ rxrest.one('foo')
   console.log(item)
 })
 ```
+
+<sup>[^ Back to menu](#menu)</sup>
 
 ## Configuration
 
@@ -141,6 +145,8 @@ rxrest.all('cars')
 .get({bearer: 'barfoo'})
 ```
 
+<sup>[^ Back to menu](#menu)</sup>
+
 ## Instance lifecycle
 
 As a resource evolves through time, when an instance of RxRest is created, it'll always have the same basis.
@@ -175,6 +181,8 @@ rxrest.all('buses')
   rxrest.one('cars/1')
 })
 ```
+
+<sup>[^ Back to menu](#menu)</sup>
 
 ## Interceptors
 
@@ -216,6 +224,8 @@ rxrest.one('cars', 1)
 > RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
 ```
 
+<sup>[^ Back to menu](#menu)</sup>
+
 ## Handlers
 
 Handlers allow you to transform the Body before or after a request is issued.
@@ -251,6 +261,8 @@ rxrest.responseBodyHandler = function(body) {
 ```
 
 [Here is an example](https://gist.github.com/soyuka/f58ae748d7010d625d981d24be6210ae) where handlers are used to parse JSON-Ld in combination with [api-platform](https://github.com/api-platform/api-platform).
+
+<sup>[^ Back to menu](#menu)</sup>
 
 ## API
 
@@ -387,6 +399,8 @@ Just a reference to Restangular ;). It's an alias to `get()`.
 
 Do a `POST` or a `PUT` request according to whether the resource came from the server or not. This is due to an internal property `fromServer`, which is set when parsing the request result.
 
+<sup>[^ Back to menu](#menu)</sup>
+
 ## Angular 2 configuration example
 
 ```javascript
@@ -406,6 +420,8 @@ rxrest.baseURL = baseURL + '/api'
   ]
 })
 ```
+
+<sup>[^ Back to menu](#menu)</sup>
 
 ## Test
 
