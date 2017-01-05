@@ -294,7 +294,10 @@ describe('RxRest', function() {
     return rxrest.one('404')
     .head()
     .observe(e => {
+    })
+    .catch((e) => {
       expect(spy).to.have.been.called
+      expect(e.status).to.equal(404)
     })
   })
 

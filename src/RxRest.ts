@@ -626,12 +626,9 @@ export class RxRest {
       })
     })
     .recoverWith(body => {
-      if (!(body instanceof Response)) {
-        return throwError(<Error> body)
-      }
-
       return of(body)
       .flatMap(this.expandInterceptors(Config.errorInterceptors))
+      .flatMap((body: ErrorResponse) => throwError(body))
     })
 
     stream['then'] = function(resolve: (value?: any) => void) {
