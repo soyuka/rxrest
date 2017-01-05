@@ -301,6 +301,15 @@ describe('RxRest', function() {
     })
   })
 
+  it('should handle error with promise', function() {
+    return rxrest.one('404')
+    .head()
+    .then(() => {})
+    .catch((e) => {
+      expect(e.status).to.equal(404)
+    })
+  })
+
   it('should create a collection from an array', function() {
     rxrest.headers.set('Content-Type', 'application/json')
 
