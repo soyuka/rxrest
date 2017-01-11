@@ -255,7 +255,7 @@ rxrest.requestBodyHandler = function(body) {
 rxrest.responseBodyHandler = function(body) {
   return body.text()
   .then(text => {
-    return JSON.parse(text)
+    return text ? JSON.parse(text) : null
   })
 }
 ```

@@ -58,6 +58,10 @@ describe('RxRest', function() {
       res.json({'method': 'delete'})
     })
 
+    app.delete('/foobar', function(req, res) {
+      res.set('Content-Length', 0).status(204).end()
+    })
+
     app.get('/error', function(req, res) {
       res.status(500).send('fail')
     })
@@ -462,6 +466,15 @@ describe('RxRest', function() {
       expect(e).to.have.property('foo', 'bar')
       expect(e.$route).to.deep.equal(['test', 4])
       return e
+    })
+  })
+
+  it('should work when no response (content-length = 0)', function() {
+    let item = rxrest.one('foobar')
+
+    return item.remove()
+    .then((e) => {
+      return 'ok'
     })
   })
 

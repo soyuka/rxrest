@@ -47,7 +47,7 @@ export class RxRestConfiguration {
   responseBodyHandler(body: Response): Promise<any> {
     return body.text()
     .then(text => {
-      return JSON.parse(text)
+      return text ? JSON.parse(text) : null
     })
   }
 }

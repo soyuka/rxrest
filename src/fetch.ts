@@ -28,6 +28,11 @@ export function fetch(input: string|Request, init?: RequestOptions): Stream<any>
           return error(<ErrorResponse> response)
         }
 
+        if (res.noContent === true) {
+          add(new Response())
+          return end()
+        }
+
         let response = new Response(res.text, res)
 
         add(response)
