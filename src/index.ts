@@ -24,7 +24,7 @@ export class RxRestItem<T> extends RxRest implements RxRestItemInterface {
 
     const proxy = new Proxy(this.$element, new RxRestProxyHandler<T>(this))
 
-    return <RxRestItem<T>> proxy
+    return <RxRestItem<T> & T> proxy
   }
 
   /**
@@ -120,7 +120,7 @@ export class RxRestCollection<T> extends RxRest implements Iterable<RxRestItem<T
 
     const proxy = new Proxy(this.$elements, new RxRestProxyHandler<T>(this))
 
-    return <RxRestCollection<T>> proxy
+    return <RxRestCollection<T> & T> proxy
   }
 
   [Symbol.iterator]() {

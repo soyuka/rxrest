@@ -1,6 +1,7 @@
 import {Stream} from 'most'
 
 export interface RxRestItemInterface {
+
 }
 
 export interface RequestInterceptor {

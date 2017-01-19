@@ -417,10 +417,12 @@ const rxrest = new NewRxRest()
 
 rxrest.one('/cars', 1)
 .get()
-.observe((item: RxRestItem<Car>) => {
-  let car = item.plain() //car is a Car
+.observe((item: RxRestItem<Car> & Car) => {
+  console.log(item.model)
+  let car = item.plain()
   console.log(car.model)
 })
+
 ```
 
 ## Angular 2 configuration example

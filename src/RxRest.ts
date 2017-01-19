@@ -579,7 +579,7 @@ export class RxRest {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request<T>(method: string, body?: BodyParam): PromisableStream<RxRestItem<T>> {
+  request<T>(method: string, body?: BodyParam): PromisableStream<RxRestItem<T> & T> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -588,7 +588,7 @@ export class RxRest {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    let stream = <PromisableStream<RxRestItem<T>>> of(request)
+    let stream = <PromisableStream<RxRestItem<T> & T>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => this.fetch(request))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
