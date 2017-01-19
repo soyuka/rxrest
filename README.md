@@ -221,7 +221,7 @@ rxrest.responseInterceptors.push(function(response) {
 rxrest.one('cars', 1)
 .get()
 
-> RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
+> RxRestItem<Car> {id: 1, brand: 'Volkswagen', name: 'Polo', foo: 1}
 ```
 
 <sup>[^ Back to menu](#menu)</sup>
@@ -297,7 +297,7 @@ For example:
 ```javascript
 const car = rxrest.fromObject('cars', {id: 1, brand: 'Volkswagen', name: 'Polo'})
 
-> RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo'}
+> RxRestItem<Car> {id: 1, brand: 'Volkswagen', name: 'Polo'}
 
 car.URL
 
@@ -316,7 +316,7 @@ rxrest.one('cars', 1).get({brand: 'Volkswagen'})
 
 GET /cars/1?brand=Volkswagen
 
-> RxRestItem {id: 1, brand: 'Volkswagen', name: 'Polo'}
+> RxRestItem<Car> {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
 
 #### `post(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
@@ -324,10 +324,11 @@ GET /cars/1?brand=Volkswagen
 Performs a `POST` request, for example:
 
 ```javascript
-rxrest.all('cars').post({brand: 'Audi', name: 'A3'})
+const car = new Car({brand: 'Audi', name: 'A3'})
+rxrest.all('cars').post(car)
 .observe(e => console.log(e))
 
-> RxRestItem {id: 3, brand: 'Audi', name: 'A3'}
+> RxRestItem<Car> {id: 3, brand: 'Audi', name: 'A3'}
 ```
 
 #### `remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem|RxRestCollection>`
@@ -366,7 +367,7 @@ Output a `JSON` string of your RxRest element.
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.observe(e => console.log(e.json()))
+.observe((e: RxRestItem<Car>) => console.log(e.json()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -378,7 +379,7 @@ This gives you the original object (ie: not an instance of RxRestItem or RxRestC
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.observe(e => console.log(e.plain()))
+.observe((e: RxRestItem<Car>) => console.log(e.plain()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -400,6 +401,27 @@ Just a reference to Restangular ;). It's an alias to `get()`.
 Do a `POST` or a `PUT` request according to whether the resource came from the server or not. This is due to an internal property `fromServer`, which is set when parsing the request result.
 
 <sup>[^ Back to menu](#menu)</sup>
+
+## Typings
+
+```typescript
+import { NewRxRest, RxRestItem } from './index';
+
+interface Car {
+  id: number;
+  name: string;
+  model: string;
+}
+
+const rxrest = new NewRxRest()
+
+rxrest.one('/cars', 1)
+.get()
+.observe((item: RxRestItem<Car>) => {
+  let car = item.plain() //car is a Car
+  console.log(car.model)
+})
+```
 
 ## Angular 2 configuration example
 
