@@ -55,6 +55,7 @@ rxrest.all('cars')
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
 -  [API](#api)
+-  [Typings](#typings)
 -  [Angular 2 configuration example](#angular-2-configuration-example)
 
 ## Technical concepts
@@ -404,10 +405,12 @@ Do a `POST` or a `PUT` request according to whether the resource came from the s
 
 ## Typings
 
+Interfaces inheritance: 
+
 ```typescript
 import { NewRxRest, RxRestItem } from './index';
 
-interface Car {
+interface Car extends RxRestItem<Car> {
   id: number;
   name: string;
   model: string;
@@ -417,13 +420,48 @@ const rxrest = new NewRxRest()
 
 rxrest.one('/cars', 1)
 .get()
-.observe((item: RxRestItem<Car> & Car) => {
+.observe((item: Car) => {
   console.log(item.model)
+})
+```
+
+Composition:
+
+You can type the stream subject with `Car & RxRestItem<Car>`. Then, `item.plain()` would be a `Car` without RxRestItem methods.
+
+```typescript
+rxrest.one('/cars', 1)
+.get()
+.observe((item: Car & RxRestItem<Car>) => {
+  console.log(item.model) //item is a Car that leverages every RxRestItem methods
+
   let car = item.plain()
-  console.log(car.model)
+  console.log(item.get) //typescript error as the plain item is a Car, in the previous example the compiler would not argue
 })
 
 ```
+
+If you work with [Hypermedia-Driven Web APIs (Hydra)](http://www.markus-lanthaler.com/hydra/), you can extend a default typing for you items to avoid repetitions:
+
+```typescript
+interface HydraItem<T> extends RxRestItem<T> {
+  '@id': string;
+  '@context': string;
+  '@type': string;
+}
+
+interface Car extends HydraItem<Car> {
+  name: string;
+  model: Model;
+  color: string;
+}
+
+interface Model extends HydraItem<Model> {
+  name: string;
+}
+```
+
+<sup>[^ Back to menu](#menu)</sup>
 
 ## Angular 2 configuration example
 
