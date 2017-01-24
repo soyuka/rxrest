@@ -478,4 +478,14 @@ describe('RxRest', function() {
     })
   })
 
+  it('should handle array query parameters', function() {
+    let item = rxrest.one('foobar')
+
+    item.queryParams = {
+      'foo[]': [0, 1]
+    }
+
+    expect(item.queryParams.toString()).to.equal('foo%5B%5D=0&foo%5B%5D=1')
+    expect(item.requestQueryParams.toString()).to.equal('?foo%5B%5D=0&foo%5B%5D=1')
+  })
 })

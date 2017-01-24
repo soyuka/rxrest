@@ -1,7 +1,7 @@
 import {RxRestCollection, RxRestItem} from './index'
 import {RxRest} from './RxRest'
 
-export class RxRestProxyHandler<T> implements ProxyHandler<RxRest> {
+export class RxRestProxyHandler<T> implements ProxyHandler<RxRest<T>> {
   private $internal: PropertyKey[] = [];
   private $instance: RxRestItem<T> | RxRestCollection<T>;
 

@@ -1,15 +1,11 @@
 /// <reference path="../interfaces.d.ts" />
 
 import {RxRestConfiguration} from './RxRestConfiguration'
-import {RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface} from './interfaces'
+import { RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface, PromisableStream, RxRestInterface, RxRestCollectionInterface } from './interfaces';
 import {RxRestCollection, RxRestItem} from './index'
 import {fetch as superAgentFetch} from './fetch'
 import {Stream, from, throwError, of} from 'most'
 import {create} from '@most/create'
-
-export interface PromisableStream<T> extends Stream<T> {
-  then: (resolve: (value?: any) => void) => void
-}
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -22,9 +18,23 @@ const fromPromise = function(promise: Promise<any>) {
   })
 }
 
+function objectToMap(map: URLSearchParams | Headers, item: any): any {
+  for (let key in item) {
+    if (Array.isArray(item[key])) {
+      for (let i = 0; i < item[key].length; i++) {
+        map.append(key, item[key][i])
+      }
+    } else {
+      map.append(key, item[key])
+    }
+  }
+
+  return map
+}
+
 const Config = new RxRestConfiguration()
 
-export class RxRest {
+export class RxRest<T> implements RxRestInterface<T> {
   protected $route: string[]
   $fromServer: boolean = false
   $queryParams: URLSearchParams = new URLSearchParams()
@@ -39,7 +49,7 @@ export class RxRest {
     this.$route = route === undefined ? [] : [...route]
   }
 
-  addRoute(route: string): void {
+  protected addRoute(route: string): void {
     this.$route.push.apply(this.$route, route.split('/'))
   }
 
@@ -50,14 +60,14 @@ export class RxRest {
    * @param {any} id
    * @returns {RxRestItem}
    */
-  one<T>(route: string, id?: any): RxRestItem<T> {
+  one<T>(route: string, id?: any): RxRestItemInterface<T> {
     this.addRoute(route)
     let o = {} as T
     if (id) {
       o[this.identifier] = id
     }
 
-    return new RxRestItem(this.$route, o)
+    return new RxRestItem<T>(this.$route, o)
   }
 
   /**
@@ -66,7 +76,7 @@ export class RxRest {
    * @param {String} route
    * @returns {RxRestCollection}
    */
-  all<T>(route: string): RxRestCollection<T> {
+  all<T>(route: string): RxRestCollectionInterface<T> {
     this.addRoute(route)
     return new RxRestCollection<T>(this.$route)
   }
@@ -78,10 +88,10 @@ export class RxRest {
    * @param {Object|Object[]} element
    * @returns {RxRestItem|RxRestCollection}
    */
-  fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
+  fromObject<T>(route: string, element: T|T[]): RxRestItemInterface<T>|RxRestCollectionInterface<T> {
     this.addRoute(route)
     return Array.isArray(element) ?
-      new RxRestCollection(this.$route, element) : new RxRestItem(this.$route, element);
+      new RxRestCollection<T>(this.$route, element) : new RxRestItem<T>(this.$route, element);
   }
 
   /**
@@ -89,7 +99,7 @@ export class RxRest {
    * @param {BodyParam} body
    * @return {BodyParam|RxRestItem}
    */
-  withBody(body: BodyParam) {
+  protected withBody(body: BodyParam<T>) {
     return body ? body : this
   }
 
@@ -101,12 +111,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  post<T>(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('POST', this.withBody(body))
+    return this.request('POST', this.withBody(body))
   }
 
   /**
@@ -116,12 +126,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  remove<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('DELETE')
+    return this.request('DELETE')
   }
 
   /**
@@ -131,12 +141,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  get<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('GET')
+    return this.request('GET')
   }
 
   /**
@@ -147,12 +157,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  put<T>(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('PUT', this.withBody(body))
+    return this.request('PUT', this.withBody(body))
   }
 
   /**
@@ -163,12 +173,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  patch<T>(body?: BodyParam, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('PATCH', this.withBody(body))
+    return this.request('PATCH', this.withBody(body))
   }
 
   /**
@@ -178,12 +188,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  head<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('HEAD')
+    return this.request('HEAD')
   }
 
   /**
@@ -193,12 +203,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  trace<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('TRACE')
+    return this.request('TRACE')
   }
 
   /**
@@ -208,12 +218,12 @@ export class RxRest {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  options<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItem<T>|RxRestCollection<T>> {
+  options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
-    return this.request<T>('OPTIONS')
+    return this.request('OPTIONS')
   }
 
   /**
@@ -278,11 +288,7 @@ export class RxRest {
       return
     }
 
-    this.$queryParams = new URLSearchParams()
-
-    for (let i in params) {
-      this.$queryParams.append(i, params[i])
-    }
+    this.$queryParams = objectToMap(new URLSearchParams(), params)
   }
 
   /**
@@ -290,7 +296,7 @@ export class RxRest {
    * @param {Object|URLSearchParams}
    * @return this
    */
-  setQueryParams(params: any): RxRest {
+  setQueryParams(params: any): RxRest<T> {
     this.localQueryParams = params
     return this
   }
@@ -300,7 +306,7 @@ export class RxRest {
    * @param {Object|URLSearchParams}
    * @return this
    */
-  setHeaders(params: any): RxRest {
+  setHeaders(params: any): RxRest<T> {
     this.localHeaders = params
     return this
   }
@@ -328,11 +334,7 @@ export class RxRest {
       return
     }
 
-    Config.queryParams = new URLSearchParams()
-
-    for (let i in params) {
-      Config.queryParams.append(i, params[i])
-    }
+    Config.queryParams = objectToMap(new URLSearchParams(), params)
   }
 
   /**
@@ -383,11 +385,7 @@ export class RxRest {
       return
     }
 
-    this.$headers = new Headers()
-
-    for (let i in params) {
-      this.$headers.append(i, params[i])
-    }
+    this.$headers = objectToMap(new Headers(), params)
  }
 
   /**
@@ -408,11 +406,7 @@ export class RxRest {
       return
     }
 
-    Config.headers = new Headers()
-
-    for (let i in params) {
-      Config.headers.append(i, params[i])
-    }
+    Config.headers = objectToMap(new Headers(), params)
  }
 
   /**
@@ -503,7 +497,7 @@ export class RxRest {
    *
    * @param {Function} fn
    */
-  set requestBodyHandler(fn: RequestBodyHandler) {
+  set requestBodyHandler(fn: RequestBodyHandler<T>) {
     Config.requestBodyHandler = fn
   }
 
@@ -512,7 +506,7 @@ export class RxRest {
    *
    * @returns {Function}
    */
-  get requestBodyHandler(): RequestBodyHandler {
+  get requestBodyHandler(): RequestBodyHandler<T> {
     return Config.requestBodyHandler
   }
 
@@ -547,7 +541,7 @@ export class RxRest {
    * @param {RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]} interceptors
    * @returns {Stream<any>} fn
    */
-  expandInterceptors(interceptors: RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]) {
+  private expandInterceptors(interceptors: RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]) {
     return function(origin: any): Stream<any> {
       return (<any>interceptors).reduce(
         (obs: Stream<any>, interceptor: any) =>
@@ -579,7 +573,7 @@ export class RxRest {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request<T>(method: string, body?: BodyParam): PromisableStream<RxRestItem<T> & T> {
+  request(method: string, body?: BodyParam<T>): PromisableStream<RxRestItemInterface<T> & T> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
