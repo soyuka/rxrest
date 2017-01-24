@@ -213,4 +213,4 @@ export class NewRxRest {
   }
 }
 
-export {RxRest}
+export {RxRest, RxRestItemInterface, RxRestCollectionInterface}
