@@ -1,6 +1,6 @@
 import {Stream} from 'most'
 
-export interface RxRestInterface<T> {
+export abstract class RxRestInterface<T> {
   json?(): string;
   one?<T>(route: string, id?: any): RxRestItemInterface<T>;
   all?<T>(route: string): RxRestCollectionInterface<T>;
@@ -33,14 +33,14 @@ export interface RxRestInterface<T> {
   request?(method: string, body?: BodyParam<T>): PromisableStream<RxRestItemInterface<T> & T>;
 }
 
-export interface RxRestItemInterface<T> extends RxRestInterface<T> {
+export abstract class RxRestItemInterface<T> extends RxRestInterface<T> {
   $element?: T;
   save?<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>>;
   clone?<T>(): RxRestItemInterface<T>;
   plain?(): T;
 }
 
-export interface RxRestCollectionInterface<T> extends RxRestInterface<T>, Iterable<RxRestItemInterface<T>> {
+export abstract class RxRestCollectionInterface<T> extends RxRestInterface<T> {
   $elements?: RxRestItemInterface<T>[];
   getList?<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>>;
   clone?<T>(): RxRestCollectionInterface<T>;
