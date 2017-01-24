@@ -1,9 +1,9 @@
 {
   "name": "rxrest",
-  "version": "1.1.19",
+  "version": "1.1.20",
   "description": "RxRest a reactive REST utility",
   "main": "lib/index.js",
-  "typings": "src/interfaces.d.ts",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
     "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
@@ -34,6 +34,5 @@
     "@most/create": "^2.0.1",
     "most": "^1.0.5",
     "superagent": "^2.3.0"
-  },
-  "typings": "lib/index.d.ts"
+  }
 }
