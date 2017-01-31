@@ -527,6 +527,20 @@ export class RxRest<T> implements RxRestInterface<T> {
     return Config.responseBodyHandler
   }
 
+  /**
+   * @param fn the callback that will be called on request abortion
+   */
+  set cancelCallback(fn: (req: Request) => void) {
+    Config.cancelCallback = fn
+  }
+
+  /**
+   * @return fn the current cancel callback
+   */
+  get cancelCallback(): (req: Request) => void {
+    return Config.cancelCallback
+  }
+
   get fetch(): any {
     return Config.fetch ? Config.fetch : superAgentFetch
   }
@@ -584,7 +598,7 @@ export class RxRest<T> implements RxRestInterface<T> {
 
     let stream = <PromisableStream<RxRestItem<T> & T>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
-    .flatMap(request => this.fetch(request))
+    .flatMap(request => this.fetch(request, null, this.cancelCallback))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .flatMap(body => fromPromise(this.responseBodyHandler(body)))
     .flatMap(body => {

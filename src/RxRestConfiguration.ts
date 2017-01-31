@@ -14,7 +14,8 @@ export class RxRestConfiguration {
   errorInterceptors: ErrorInterceptor[] = []
   headers: Headers = new Headers()
   queryParams: URLSearchParams = new URLSearchParams()
-  fetch: any;
+  fetch: any
+  cancelCallback: (req: Request) => void = () => {}
 
   /**
    * requestBodyHandler

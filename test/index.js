@@ -1,5 +1,6 @@
 const {combine, of, from} = require('most')
 const chai = require('chai')
+const most = require('most')
 const spies = require('chai-spies')
 chai.use(spies)
 const expect = chai.expect
@@ -64,6 +65,12 @@ describe('RxRest', function() {
 
     app.get('/error', function(req, res) {
       res.status(500).send('fail')
+    })
+
+    app.get('/timeout', function(req, res) {
+      setTimeout(() => {
+        res.status(504).end()
+      }, 100)
     })
 
     app.listen(3333, cb)
@@ -394,18 +401,21 @@ describe('RxRest', function() {
   })
 
   it('should abort a request', function(cb) {
-    let obs = rxrest
-    .one('test', 3)
-    .get()
+    rxrest.cancelCallback = chai.spy()
+     
+    let t = rxrest.all('timeout')
+
+    most.from([0, 1])
+    .delay(10)
+    .chain(() => t.get())
     .subscribe({
-      next: () => {
-        throw new TypeError('fail aborting')
+      next: () => cb(new Error('Next called')),
+      error: (err) => {
+        expect(err.status).to.equal(504)
+        expect(rxrest.cancelCallback).to.have.been.called
+        cb()
       }
     })
-
-    obs.unsubscribe()
-
-    setTimeout(e => cb(), 50)
   })
 
   it('should chain query params', function() {
