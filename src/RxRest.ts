@@ -530,15 +530,15 @@ export class RxRest<T> implements RxRestInterface<T> {
   /**
    * @param fn the callback that will be called on request abortion
    */
-  set cancelCallback(fn: (req: Request) => void) {
-    Config.cancelCallback = fn
+  set abortCallback(fn: (req: Request) => void) {
+    Config.abortCallback = fn
   }
 
   /**
    * @return fn the current cancel callback
    */
-  get cancelCallback(): (req: Request) => void {
-    return Config.cancelCallback
+  get abortCallback(): (req: Request) => void {
+    return Config.abortCallback
   }
 
   get fetch(): any {
@@ -598,7 +598,7 @@ export class RxRest<T> implements RxRestInterface<T> {
 
     let stream = <PromisableStream<RxRestItem<T> & T>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
-    .flatMap(request => this.fetch(request, null, this.cancelCallback))
+    .flatMap(request => this.fetch(request, null, this.abortCallback))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
     .flatMap(body => fromPromise(this.responseBodyHandler(body)))
     .flatMap(body => {

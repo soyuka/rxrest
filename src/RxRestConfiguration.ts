@@ -15,7 +15,7 @@ export class RxRestConfiguration {
   headers: Headers = new Headers()
   queryParams: URLSearchParams = new URLSearchParams()
   fetch: any
-  cancelCallback: (req: Request) => void = () => {}
+  abortCallback: (req: Request) => void = () => {}
 
   /**
    * requestBodyHandler

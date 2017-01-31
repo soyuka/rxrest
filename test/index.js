@@ -401,7 +401,7 @@ describe('RxRest', function() {
   })
 
   it('should abort a request', function(cb) {
-    rxrest.cancelCallback = chai.spy()
+    rxrest.abortCallback = chai.spy()
      
     let t = rxrest.all('timeout')
 
@@ -412,7 +412,7 @@ describe('RxRest', function() {
       next: () => cb(new Error('Next called')),
       error: (err) => {
         expect(err.status).to.equal(504)
-        expect(rxrest.cancelCallback).to.have.been.called
+        expect(rxrest.abortCallback).to.have.been.called
         cb()
       }
     })
