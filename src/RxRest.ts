@@ -1,11 +1,11 @@
 /// <reference path="../interfaces.d.ts" />
 
-import {RxRestConfiguration} from './RxRestConfiguration'
+import { RxRestConfiguration } from './RxRestConfiguration'
 import { RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface, PromisableStream, RxRestInterface, RxRestCollectionInterface } from './interfaces';
-import {RxRestCollection, RxRestItem} from './index'
-import {fetch as superAgentFetch} from './fetch'
-import {Stream, from, throwError, of} from 'most'
-import {create} from '@most/create'
+import { RxRestCollection, RxRestItem } from './index'
+import { fetch as superAgentFetch } from './fetch'
+import { Stream, from, throwError, of } from 'most'
+import { create } from '@most/create'
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -604,7 +604,6 @@ export class RxRest<T> implements RxRestInterface<T> {
     .flatMap(body => {
       if (!Array.isArray(body)) {
         let item: RxRestItem<T>
-
         if (this instanceof RxRestItem) {
           item = this
           item.element = body as T

@@ -16,6 +16,7 @@ global.Request = Request
 global.FormData = require('form-data')
 
 const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require('../lib/index.js')
+const {Observable} = require('rxjs/Rx')
 const {fetch} = require('../lib/fetch')
 let rxrest
 const newRxRest = new NewRxRest()
@@ -65,6 +66,10 @@ describe('RxRest', function() {
 
     app.get('/error', function(req, res) {
       res.status(500).send('fail')
+    })
+
+    app.get('/empty', function(req, res) {
+      res.status(200).json([])
     })
 
     app.get('/timeout', function(req, res) {
@@ -402,7 +407,7 @@ describe('RxRest', function() {
 
   it('should abort a request', function(cb) {
     rxrest.abortCallback = chai.spy()
-     
+
     let t = rxrest.all('timeout')
 
     most.from([0, 1])
@@ -498,4 +503,27 @@ describe('RxRest', function() {
     expect(item.queryParams.toString()).to.equal('foo%5B%5D=0&foo%5B%5D=1')
     expect(item.requestQueryParams.toString()).to.equal('?foo%5B%5D=0&foo%5B%5D=1')
   })
+
+  it('should get end when no results', function(cb) {
+    rxrest.all('empty')
+    .get()
+    .subscribe({
+      next: () => {},
+      error: () => {},
+      complete: () => {
+        cb()
+      }
+    })
+  })
+
+  it('should work with rxjs switch map and get end event on empty', function(cb) {
+		var source = Observable
+			.of('v')
+			.switchMap(function(x) {
+        return rxrest.all('empty').get()
+			});
+
+      source.subscribe((v) => {}, () => {}, () => cb())
+  })
+
 })
