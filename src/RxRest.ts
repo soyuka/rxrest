@@ -639,6 +639,7 @@ export class RxRest<T> implements RxRestInterface<T> {
     })
 
     stream['then'] = function(resolve: (value?: any) => void) {
+      console.warn('Method deprecated, please use .observe().then().catch()')
       return stream.observe(e => {}).then(resolve)
     }
 
