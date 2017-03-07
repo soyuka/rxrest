@@ -1,11 +1,24 @@
 /// <reference path="../interfaces.d.ts" />
 
 import { RxRestConfiguration } from './RxRestConfiguration'
-import { RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface, PromisableStream, RxRestInterface, RxRestCollectionInterface, ErrorResponse } from './interfaces';
-import { RxRestCollection, RxRestItem } from './index'
+import {
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor,
+  ErrorResponse
+} from './interfaces';
+import { RxRestCollection, RxRestItem, BodyParam } from './index'
 import { fetch as superAgentFetch } from './fetch'
-import { Stream, from, throwError, of } from 'most'
+import { Stream, throwError, of } from 'most'
 import { create } from '@most/create'
+
+export interface RequestBodyHandler<T> {
+  (body: BodyParam<T>): FormData|URLSearchParams|Body|Blob|undefined|string|Promise<any>
+}
+
+export interface ResponseBodyHandler {
+  (body: Response): Promise<any>
+}
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -34,7 +47,7 @@ function objectToMap(map: URLSearchParams | Headers, item: any): any {
 
 const Config = new RxRestConfiguration()
 
-export class RxRest<T> implements RxRestInterface<T> {
+export class RxRest<T> {
   protected $route: string[]
   $fromServer: boolean = false
   $queryParams: URLSearchParams = new URLSearchParams()
@@ -60,7 +73,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @param {any} id
    * @returns {RxRestItem}
    */
-  one<T>(route: string, id?: any): RxRestItemInterface<T> {
+  one<T>(route: string, id?: any): RxRestItem<T> {
     this.addRoute(route)
     let o = {} as T
     if (id) {
@@ -76,7 +89,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @param {String} route
    * @returns {RxRestCollection}
    */
-  all<T>(route: string): RxRestCollectionInterface<T> {
+  all<T>(route: string): RxRestCollection<T> {
     this.addRoute(route)
     return new RxRestCollection<T>(this.$route)
   }
@@ -88,7 +101,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @param {Object|Object[]} element
    * @returns {RxRestItem|RxRestCollection}
    */
-  fromObject<T>(route: string, element: T|T[]): RxRestItemInterface<T>|RxRestCollectionInterface<T> {
+  fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
     this.addRoute(route)
     return Array.isArray(element) ?
       new RxRestCollection<T>(this.$route, element) : new RxRestItem<T>(this.$route, element);
@@ -112,7 +125,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -127,7 +140,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -142,7 +155,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -158,7 +171,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -174,7 +187,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -189,7 +202,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -204,7 +217,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -219,7 +232,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -587,7 +600,7 @@ export class RxRest<T> implements RxRestInterface<T> {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam<T>): PromisableStream<RxRestItemInterface<T> & T> {
+  request(method: string, body?: BodyParam<T>): Stream<RxRestItem<T> & T> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -596,7 +609,7 @@ export class RxRest<T> implements RxRestInterface<T> {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    let stream = <PromisableStream<RxRestItem<T> & T>> of(request)
+    let stream = <Stream<RxRestItem<T> & T>> of(request)
     .flatMap(this.expandInterceptors(Config.requestInterceptors))
     .flatMap(request => this.fetch(request, null, this.abortCallback))
     .flatMap(this.expandInterceptors(Config.responseInterceptors))
@@ -637,11 +650,6 @@ export class RxRest<T> implements RxRestInterface<T> {
       .flatMap(this.expandInterceptors(Config.errorInterceptors))
       .flatMap((body: ErrorResponse) => throwError(body))
     })
-
-    stream['then'] = function(resolve: (value?: any) => void) {
-      console.warn('Method deprecated, please use .observe().then().catch()')
-      return stream.observe(e => {}).then(resolve)
-    }
 
     return stream
   }

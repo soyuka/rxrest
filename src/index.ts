@@ -2,10 +2,11 @@
 
 import { Stream } from 'most'
 import { RxRestProxyHandler } from './RxRestProxyHandler'
-import { BodyParam, PromisableStream, RxRestCollectionInterface, RxRestItemInterface } from './interfaces';
 import { RxRest } from './RxRest'
 
-export class RxRestItem<T> extends RxRest<T> implements RxRestItemInterface<T> {
+export type BodyParam<T> = RxRestItem<T>|FormData|URLSearchParams|Body|Blob|undefined|Object;
+
+export class RxRestItem<T> extends RxRest<T> {
   $element: T = {} as T;
 
   /**
@@ -35,7 +36,7 @@ export class RxRestItem<T> extends RxRest<T> implements RxRestItemInterface<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   save(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -87,7 +88,7 @@ export class RxRestItem<T> extends RxRest<T> implements RxRestItemInterface<T> {
    * Clone
    * @return {RxRestItem<T>}
    */
-  clone(): RxRestItemInterface<T> {
+  clone(): RxRestItem<T> {
     let route = this.$route
 
     if (this.$element[this.identifier]) {
@@ -100,10 +101,10 @@ export class RxRestItem<T> extends RxRest<T> implements RxRestItemInterface<T> {
   }
 }
 
-export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItemInterface<T>>, RxRestCollectionInterface<T> {
+export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>>, RxRestCollection<T> {
   length: number;
-  $elements: RxRestItemInterface<T>[] = [];
-  [index: number]: RxRestItemInterface<T>;
+  $elements: RxRestItem<T>[] = [];
+  [index: number]: RxRestItem<T>;
 
   /**
    * constructor
@@ -112,7 +113,7 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
    * @param {T[]|RxRestItem<T>[]]} [elements]
    * @return {Proxy}
    */
-  constructor(route: string[], elements?: T[]|RxRestItemInterface<T>[]) {
+  constructor(route: string[], elements?: T[]|RxRestItem<T>[]) {
     super(route)
     if (elements !== undefined) {
       this.elements = (elements as any).map((e: any) => e instanceof RxRestItem ? e.clone() : new RxRestItem(this.$route, e))
@@ -128,7 +129,7 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
     let elements = this.$elements
 
     return {
-      next(): IteratorResult<RxRestItemInterface<T>> {
+      next(): IteratorResult<RxRestItem<T>> {
         return index < elements.length ?
           {value: elements[index++], done: false} : {value: undefined, done: true}
       }
@@ -143,7 +144,7 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   getList(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    PromisableStream<RxRestItemInterface<T>|RxRestCollectionInterface<T>> {
+    Stream<RxRestItem<T>|RxRestCollection<T>> {
     this.localQueryParams = queryParams
     this.localHeaders = headers
 
@@ -155,7 +156,7 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
    *
    * @param {T[]} elements
    */
-  set elements(elements: RxRestItemInterface<T>[]) {
+  set elements(elements: RxRestItem<T>[]) {
     this.$elements = elements
     this.length = elements.length
   }
@@ -164,7 +165,7 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
    * get elements
    * @return {RxRestItem<T>[]}
    */
-  get elements(): RxRestItemInterface<T>[] {
+  get elements(): RxRestItem<T>[] {
     return this.$elements
   }
 
@@ -191,23 +192,23 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
    *
    * @returns {RxRestCollection}
    */
-  clone(): RxRestCollectionInterface<T> {
+  clone(): RxRestCollection<T> {
     return new RxRestCollection<T>(this.$route, this.$elements)
   }
 }
 
 export class NewRxRest {
-  one<T>(route: string, id?: any): RxRestItemInterface<T> {
+  one<T>(route: string, id?: any): RxRestItem<T> {
     let r = new RxRest()
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string): RxRestCollectionInterface<T> {
+  all<T>(route: string): RxRestCollection<T> {
     let r = new RxRest()
     return r.all.call(r, route)
   }
 
-  fromObject<T>(route: string, element: T|T[]): RxRestItemInterface<T>|RxRestCollectionInterface<T> {
+  fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
     let r = new RxRest()
     return r.fromObject.call(r, route, element)
   }

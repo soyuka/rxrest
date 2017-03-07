@@ -1,6 +1,10 @@
 /// <reference path="../interfaces.d.ts" />
 
-import {RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface} from './interfaces'
+import {
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor
+} from './interfaces'
 import {RxRestItem} from './index'
 
 /**
@@ -15,7 +19,7 @@ export class RxRestConfiguration {
   headers: Headers = new Headers()
   queryParams: URLSearchParams = new URLSearchParams()
   fetch: any
-  abortCallback: (req: Request) => void = () => {}
+  abortCallback: (req: Request) => void = () => null
 
   /**
    * requestBodyHandler
