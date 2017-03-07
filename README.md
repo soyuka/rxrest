@@ -71,12 +71,13 @@ This script depends on `superagent` (for a easier XMLHttpRequest usage, compatib
 
 ## Promise compatibility
 
-Sometimes you don't need to subscribe/observe the response. To do so, you can get a promise and skip the observable part:
+Sometimes you don't need to subscribe/observe the response. Mostjs already leverage the feature:
 
 ```javascript
 
 rxrest.one('foo')
 .get()
+.observe(() => {})
 .then(item => {
   console.log(item)
 })
