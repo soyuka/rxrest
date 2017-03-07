@@ -1,6 +1,6 @@
 {
   "name": "rxrest",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "RxRest a reactive REST utility",
   "main": "build/rxrest.bundle.js",
   "typings": "typings/rxrest.d.ts",
