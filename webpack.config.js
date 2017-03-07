@@ -5,7 +5,9 @@ module.exports = {
   devtool: 'source-map',
   output: {
     path: `${__dirname}/build`,
-    filename: 'rxrest.bundle.js'
+    filename: 'rxrest.bundle.js',
+    library: 'rxrest',
+    libraryTarget: 'umd'
   },
   module: {
     loaders: [
