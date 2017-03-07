@@ -2,7 +2,7 @@
 
 [[ '' == $1 ]] && echo "Please provide patch, minor, major argument" && exit 1
 
-gulp
+npm run bundle
 npm test
 newver=$(npm --no-git-tag-version version $1)
 git add -f build package.json
