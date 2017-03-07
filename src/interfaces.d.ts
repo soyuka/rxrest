@@ -62,7 +62,7 @@ export interface ErrorInterceptor {
 export type BodyParam<T> = RxRestItemInterface<T>|FormData|URLSearchParams|Body|Blob|undefined|Object;
 
 export interface RequestBodyHandler<T> {
-  (body: BodyParam<T>): FormData|URLSearchParams|Body|Blob|undefined|string
+  (body: BodyParam<T>): FormData|URLSearchParams|Body|Blob|undefined|string|Promise<any>
 }
 
 export interface ResponseBodyHandler {
@@ -71,4 +71,30 @@ export interface ResponseBodyHandler {
 
 export interface PromisableStream<T> extends Stream<T> {
   then: (resolve: (value?: any) => void) => void
+}
+
+export interface ErrorResponse extends Response {
+  name: string;
+  message: string;
+}
+
+export interface RequestOptions {
+  method: string;
+  headers?: Headers;
+  body?: Body|Blob|FormData|URLSearchParams|Object;
+  mode?: string;
+  credentials?: string;
+  cache?: string;
+  redirect?: string;
+  referrer?: string;
+  integrity?: string;
+}
+
+export interface FixedHeaders extends Map<string, string> {
+  append: (name: string, value: string) => void;
+  getAll: () => Object[];
+}
+
+export interface RequestWithHeaders extends Request {
+  headers: FixedHeaders;
 }

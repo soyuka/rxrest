@@ -1,7 +1,7 @@
 /// <reference path="../interfaces.d.ts" />
 
 import { RxRestConfiguration } from './RxRestConfiguration'
-import { RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface, PromisableStream, RxRestInterface, RxRestCollectionInterface } from './interfaces';
+import { RequestInterceptor, RequestBodyHandler, ResponseInterceptor, ResponseBodyHandler, ErrorInterceptor, BodyParam, RxRestItemInterface, PromisableStream, RxRestInterface, RxRestCollectionInterface, ErrorResponse } from './interfaces';
 import { RxRestCollection, RxRestItem } from './index'
 import { fetch as superAgentFetch } from './fetch'
 import { Stream, from, throwError, of } from 'most'

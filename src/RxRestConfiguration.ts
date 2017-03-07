@@ -25,7 +25,7 @@ export class RxRestConfiguration {
    * @returns {any}
    */
   requestBodyHandler(body: FormData|URLSearchParams|Body|Blob|undefined):
-    FormData|URLSearchParams|Body|Blob|undefined|string {
+    FormData|URLSearchParams|Body|Blob|undefined|string|Promise<any> {
     if (!body) {
       return undefined
     }

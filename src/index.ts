@@ -50,7 +50,7 @@ export class RxRestItem<T> extends RxRest<T> implements RxRestItemInterface<T> {
   set element(element: T) {
     for (let i in element) {
       if (i === this.identifier && !this.$element[this.identifier]) {
-        this.$route.push(element[i])
+        this.$route.push(''+element[i])
       }
 
       this.$element[i] = element[i]

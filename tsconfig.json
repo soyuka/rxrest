@@ -15,7 +15,6 @@
     "tabSize": 2
   },
   "files": [
-     "interfaces.d.ts",
      "src/fetch.ts",
      "src/index.ts"
    ],
