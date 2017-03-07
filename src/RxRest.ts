@@ -566,7 +566,9 @@ export class RxRest<T> {
    * @param {RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]} interceptors
    * @returns {Stream<any>} fn
    */
-  private expandInterceptors(interceptors: RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]) {
+  private expandInterceptors(
+    interceptors: RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]
+  ) {
     return function(origin: any): Stream<any> {
       return (<any>interceptors).reduce(
         (obs: Stream<any>, interceptor: any) =>

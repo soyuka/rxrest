@@ -2,6 +2,8 @@
 
 [[ '' == $1 ]] && echo "Please provide patch, minor, major argument" && exit 1
 
+npm run lint
+npm run build
 npm run bundle
 npm test
 newver=$(npm --no-git-tag-version version $1)

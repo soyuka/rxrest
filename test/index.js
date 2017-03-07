@@ -15,7 +15,13 @@ global.Request = Request
 
 global.FormData = require('form-data')
 
-const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require('../lib/index.js')
+const testBundle = process.env.TEST_BUNDLE
+
+if (testBundle) {
+  console.log('Testing bundle version')
+}
+
+const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require(testBundle ? '../build/rxrest.js' : '../lib/index.js')
 const {Observable} = require('rxjs/Rx')
 const {fetch} = require('../lib/fetch')
 let rxrest

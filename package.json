@@ -3,13 +3,14 @@
   "version": "2.0.4",
   "description": "RxRest a reactive REST utility",
   "typings": "typings/rxrest.d.ts",
-  "main": "build/rxrest.bundle.js",
+  "main": "build/rxrest.js",
+  "browser": "build/rxrest.bundle.min.js",
   "scripts": {
-    "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
-    "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
-    "test": "npm run build && ./node_modules/.bin/mocha -b",
+    "lint": "tslint -c tslint.json src/*.ts",
+    "coverage": "istanbul cover _mocha test/index.js",
+    "test": "mocha -b && TEST_BUNDLE=true mocha -b",
     "build": "tsc",
-    "bundle": "webpack --optimize-minimize --config webpack.config.js"
+    "bundle": "bash build.sh"
   },
   "keywords": [
     "REST",
@@ -20,9 +21,7 @@
   "license": "MIT",
   "devDependencies": {
     "awesome-typescript-loader": "^3.0.8",
-    "babel-core": "^6.23.1",
-    "babel-preset-env": "^1.2.1",
-    "body-parser": "^1.15.2",
+    "body-parser": "^1.17.1",
     "chai": "^3.5.0",
     "chai-spies": "^0.7.1",
     "express": "^4.14.0",
@@ -30,10 +29,14 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.1.0",
     "node-fetch": "github:bitinn/node-fetch#5fe80dba06fbf384cc712a299c698b884a857cfc",
+    "rollup": "^0.41.4",
+    "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "rollup-plugin-uglify": "^1.0.1",
     "rxjs": "^5.1.1",
     "tslint": "^3.15.1",
     "typescript": "^2.2.1",
-    "webpack": "^2.2.1"
+    "uglify-js": "github:mishoo/UglifyJS2#harmony"
   },
   "dependencies": {
     "@most/create": "^2.0.1",

@@ -2,7 +2,7 @@ import { Stream } from 'most';
 
 export function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
-export declare class RxRest<T> {
+export class RxRest<T> {
   constructor(route?: string[]);
   json?(): string;
   one?<T>(route: string, id?: any): RxRestItem<T>;
@@ -41,14 +41,14 @@ export declare class RxRest<T> {
   abortCallback: (req: Request) => void;
 }
 
-export declare class RxRestItem<T> extends RxRest<T> {
+export class RxRestItem<T> extends RxRest<T> {
   $element?: T;
   save?<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
   clone?<T>(): RxRestItem<T>;
   plain?(): T;
 }
 
-export declare class RxRestCollection<T> extends RxRest<T>, Iterable<RxRestItem<T>> {
+export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>> {
   length: number;
   [Symbol.iterator]: () => Iterator<RxRestItem<T>>;
   $elements?: RxRestItem<T>[];
@@ -100,6 +100,9 @@ export interface RequestOptions {
   integrity?: string;
 }
 
+/**
+ * @TODO, should be Headers but it doesn't use Symbol.Iterable?
+ */
 export interface FixedHeaders extends Map<string, string> {
   append: (name: string, value: string) => void;
   getAll: () => Object[];
@@ -109,10 +112,7 @@ export interface RequestWithHeaders extends Request {
   headers: FixedHeaders;
 }
 
-/**
-  * RxRestConfiguration
-  */
-export declare class RxRestConfiguration {
+export interface RxRestConfiguration {
     baseURL: string;
     identifier: string;
     requestInterceptors: RequestInterceptor[];
@@ -122,26 +122,11 @@ export declare class RxRestConfiguration {
     queryParams: URLSearchParams;
     fetch: any;
     abortCallback: (req: Request) => void;
-    /**
-      * requestBodyHandler
-      * JSONify the body if it's an `RxRestItem` or an `Object`
-      *
-      * @param {FormData|URLSearchParams|Body|Blob|undefined} body
-      * @returns {any}
-      */
     requestBodyHandler(body: FormData | URLSearchParams | Body | Blob | undefined): FormData | URLSearchParams | Body | Blob | undefined | string | Promise<any>;
-    /**
-      * responseBodyHandler
-      * transforms the response to a json object
-      *
-      * @param {Response} body
-      * @reject when response is an error
-      * @returns {Promise<any>}
-      */
     responseBodyHandler(body: Response): Promise<any>;
 }
 
-export declare class NewRxRest {
+export class NewRxRest {
     one<T>(route: string, id?: any): RxRestItem<T>;
     all<T>(route: string): RxRestCollection<T>;
     fromObject<T>(route: string, element: T | T[]): RxRestItem<T> | RxRestCollection<T>;

@@ -3,7 +3,11 @@ import * as superagent from 'superagent'
 import {Stream, fromPromise} from 'most'
 import {create} from '@most/create'
 
-export function fetch(input: string|RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any> {
+export function fetch(
+  input: string|RequestWithHeaders,
+  init?: RequestOptions,
+  abortCallback?: (req: Request) => void
+): Stream<any> {
 
   if (!(input instanceof Request)) {
     input = new Request(input, init) as RequestWithHeaders

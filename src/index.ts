@@ -49,7 +49,7 @@ export class RxRestItem<T> extends RxRest<T> {
   set element(element: T) {
     for (let i in element) {
       if (i === this.identifier && !this.$element[this.identifier]) {
-        this.$route.push(''+element[i])
+        this.$route.push('' + element[i])
       }
 
       this.$element[i] = element[i]
@@ -99,7 +99,8 @@ export class RxRestItem<T> extends RxRest<T> {
   }
 }
 
-export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>>, RxRestCollection<T> {
+export class RxRestCollection<T> extends RxRest<T>
+  implements Iterable<RxRestItem<T>>, RxRestCollection<T> {
   length: number;
   $elements: RxRestItem<T>[] = [];
   [index: number]: RxRestItem<T>;
@@ -114,7 +115,9 @@ export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestIte
   constructor(route: string[], elements?: T[]|RxRestItem<T>[]) {
     super(route)
     if (elements !== undefined) {
-      this.elements = (elements as any).map((e: any) => e instanceof RxRestItem ? e.clone() : new RxRestItem(this.$route, e))
+      this.elements = (elements as any).map((e: any) =>
+        e instanceof RxRestItem ? e.clone() : new RxRestItem(this.$route, e)
+      )
     }
 
     const proxy = new Proxy(this.$elements, new RxRestProxyHandler<T>(this))
