@@ -50,9 +50,9 @@ export class RxRestItem<T> extends RxRest<T> {
   plain?(): T;
 }
 
-export class RxRestCollection<T> extends RxRest<T>, Iterable<RxRestItem<T>> {
+export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>> {
   length: number;
-  [index: number]: RxRestItem<T>;
+  [Symbol.iterator]: () => Iterator<RxRestItem<T>>;
   $elements?: RxRestItem<T>[];
   getList?<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
   clone?<T>(): RxRestCollection<T>;
