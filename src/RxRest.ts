@@ -1,5 +1,3 @@
-/// <reference path="../interfaces.d.ts" />
-
 import { RxRestConfiguration } from './RxRestConfiguration'
 import {
   RequestInterceptor,

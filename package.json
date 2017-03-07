@@ -2,8 +2,8 @@
   "name": "rxrest",
   "version": "2.0.3",
   "description": "RxRest a reactive REST utility",
-  "main": "build/rxrest.bundle.js",
   "typings": "typings/rxrest.d.ts",
+  "main": "build/rxrest.bundle.js",
   "scripts": {
     "lint": "./node_modules/.bin/tslint -c tslint.json src/*.ts",
     "coverage": "npm run build && ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/index.js",
@@ -33,7 +33,6 @@
     "rxjs": "^5.1.1",
     "tslint": "^3.15.1",
     "typescript": "^2.2.1",
-    "typings": "^1.4.0",
     "webpack": "^2.2.1"
   },
   "dependencies": {

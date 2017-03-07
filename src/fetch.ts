@@ -1,5 +1,3 @@
-/// <reference path="../interfaces.d.ts" />
-
 import { RequestOptions, ErrorResponse, RequestWithHeaders } from './interfaces'
 import * as superagent from 'superagent'
 import {Stream, fromPromise} from 'most'

@@ -1,10 +1,8 @@
-/// <reference path="../interfaces.d.ts" />
-
 import { Stream } from 'most';
 
 export function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
-export class RxRest<T> {
+export declare class RxRest<T> {
   constructor(route?: string[]);
   json?(): string;
   one?<T>(route: string, id?: any): RxRestItem<T>;
@@ -43,14 +41,14 @@ export class RxRest<T> {
   abortCallback: (req: Request) => void;
 }
 
-export class RxRestItem<T> extends RxRest<T> {
+export declare class RxRestItem<T> extends RxRest<T> {
   $element?: T;
   save?<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
   clone?<T>(): RxRestItem<T>;
   plain?(): T;
 }
 
-export class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>> {
+export declare class RxRestCollection<T> extends RxRest<T>, Iterable<RxRestItem<T>> {
   length: number;
   [Symbol.iterator]: () => Iterator<RxRestItem<T>>;
   $elements?: RxRestItem<T>[];
@@ -114,7 +112,7 @@ export interface RequestWithHeaders extends Request {
 /**
   * RxRestConfiguration
   */
-export class RxRestConfiguration {
+export declare class RxRestConfiguration {
     baseURL: string;
     identifier: string;
     requestInterceptors: RequestInterceptor[];
@@ -143,7 +141,7 @@ export class RxRestConfiguration {
     responseBodyHandler(body: Response): Promise<any>;
 }
 
-export class NewRxRest {
+export declare class NewRxRest {
     one<T>(route: string, id?: any): RxRestItem<T>;
     all<T>(route: string): RxRestCollection<T>;
     fromObject<T>(route: string, element: T | T[]): RxRestItem<T> | RxRestCollection<T>;

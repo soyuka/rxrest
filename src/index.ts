@@ -1,5 +1,3 @@
-/// <reference path="../interfaces.d.ts" />
-
 import { Stream } from 'most'
 import { RxRestProxyHandler } from './RxRestProxyHandler'
 import { RxRest } from './RxRest'

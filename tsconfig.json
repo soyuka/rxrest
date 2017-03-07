@@ -15,6 +15,7 @@
     "tabSize": 2
   },
   "files": [
+    "superagent.d.ts",
      "src/fetch.ts",
      "src/index.ts"
    ],
