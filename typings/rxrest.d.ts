@@ -5,6 +5,7 @@ import { Stream } from 'most';
 export function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
 export class RxRest<T> {
+  constructor(route?: string[]);
   json?(): string;
   one?<T>(route: string, id?: any): RxRestItem<T>;
   all?<T>(route: string): RxRestCollection<T>;
