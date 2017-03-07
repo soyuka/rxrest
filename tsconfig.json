@@ -14,9 +14,13 @@
     "indentSize": 2,
     "tabSize": 2
   },
-   "files": [
+  "files": [
      "interfaces.d.ts",
      "src/fetch.ts",
      "src/index.ts"
-   ]
+   ],
+  "awesomeTypescriptLoaderOptions": {
+    "useBabel": true,
+    "useCache": true
+  }
 }
