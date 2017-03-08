@@ -2,7 +2,7 @@
   "name": "rxrest",
   "version": "2.0.4",
   "description": "RxRest a reactive REST utility",
-  "main": "build/rxrest.js",
+  "main": "build/rxrest.bundle.min.js",
   "browser": "build/rxrest.bundle.min.js",
   "jsnext:main": "lib/index.js",
   "module": "lib/index.js",
