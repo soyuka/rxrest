@@ -25,7 +25,8 @@ if (full) {
 
 export default {
   entry: 'src/index.ts',
-  format: 'cjs',
+  format: 'umd',
+  moduleName: 'rxrest',
   plugins: plugins,
   dest: `build/rxrest${full ? '.bundle' : ''}${prod ? '.min' : ''}.js`,
   sourceMap: true
