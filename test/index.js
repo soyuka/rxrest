@@ -21,13 +21,13 @@ if (testBundle) {
   console.log('Testing bundle version')
 }
 
-const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require(testBundle ? '../build/rxrest.js' : '../lib/index.js')
+const {RxRest, RxRestItem, RxRestCollection, NewRxRest} = require('../build/rxrest.js')
 const {Observable} = require('rxjs/Rx')
-const {fetch} = require('../lib/fetch')
 let rxrest
 const newRxRest = new NewRxRest()
 
 const temp = new RxRest()
+const fetch = temp.fetch
 const RxRestRequestBodyHandler = temp.requestBodyHandler
 const RxRestResponseBodyHandler = temp.responseBodyHandler
 

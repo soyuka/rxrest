@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "tslint -c tslint.json src/*.ts",
     "coverage": "istanbul cover _mocha test/index.js",
-    "test": "mocha -b && TEST_BUNDLE=true mocha -b",
+    "test": "mocha -b",
     "build": "tsc",
     "bundle": "bash build.sh"
   },

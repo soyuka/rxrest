@@ -1,3 +1,3 @@
 declare module 'superagent' {
-  export {};
+  export default {};
 }
