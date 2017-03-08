@@ -1,6 +1,6 @@
 {
   "name": "rxrest",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "RxRest a reactive REST utility",
   "main": "build/rxrest.bundle.min.js",
   "browser": "build/rxrest.bundle.min.js",
@@ -14,7 +14,10 @@
     "bundle": "bash build.sh"
   },
   "files": [
-    "src", "lib", "build", "type-definitions"
+    "src",
+    "lib",
+    "build",
+    "type-definitions"
   ],
   "keywords": [
     "REST",
