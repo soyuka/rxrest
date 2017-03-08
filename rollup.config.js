@@ -1,6 +1,7 @@
 import ts from 'rollup-plugin-typescript'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import uglify from 'rollup-plugin-uglify'
+import cjs from 'rollup-plugin-commonjs'
 
 const plugins = [
   ts(),
@@ -17,6 +18,8 @@ if (full) {
   plugins.push(nodeResolve({
     jsnext: true,
     browser: true
+  }), cjs({
+    include: 'node_modules/superagent/**'
   }))
 }
 
