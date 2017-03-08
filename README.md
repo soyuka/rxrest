@@ -406,12 +406,13 @@ Do a `POST` or a `PUT` request according to whether the resource came from the s
 
 ## Typings
 
-Interfaces inheritance: 
+Interfaces inheritance:
 
 ```typescript
-import { NewRxRest, RxRestItem } from './index';
+import { NewRxRest } from 'rxrest';
+import { RxRestItemInterface } from 'rxrest/typings/main'
 
-interface Car extends RxRestItem<Car> {
+interface Car extends RxRestItemInterface<Car> {
   id: number;
   name: string;
   model: string;
@@ -423,29 +424,16 @@ rxrest.one('/cars', 1)
 .get()
 .observe((item: Car) => {
   console.log(item.model)
+  item.model = 'audi'
+
+  item.save()
 })
-```
-
-Composition:
-
-You can type the stream subject with `Car & RxRestItem<Car>`. Then, `item.plain()` would be a `Car` without RxRestItem methods.
-
-```typescript
-rxrest.one('/cars', 1)
-.get()
-.observe((item: Car & RxRestItem<Car>) => {
-  console.log(item.model) //item is a Car that leverages every RxRestItem methods
-
-  let car = item.plain()
-  console.log(item.get) //typescript error as the plain item is a Car, in the previous example the compiler would not argue
-})
-
 ```
 
 If you work with [Hypermedia-Driven Web APIs (Hydra)](http://www.markus-lanthaler.com/hydra/), you can extend a default typing for you items to avoid repetitions:
 
 ```typescript
-interface HydraItem<T> extends RxRestItem<T> {
+interface HydraItem<T> extends RxRestItemInterface<T> {
   '@id': string;
   '@context': string;
   '@type': string;
