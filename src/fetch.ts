@@ -1,5 +1,5 @@
 import { RequestOptions, ErrorResponse, RequestWithHeaders } from './interfaces'
-import * as superagent from 'superagent'
+import superagent from 'superagent'
 import {Stream, fromPromise} from 'most'
 import {create} from '@most/create'
 

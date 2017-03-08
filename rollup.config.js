@@ -15,12 +15,17 @@ if (prod) {
 }
 
 if (full) {
-  plugins.push(nodeResolve({
-    jsnext: true,
-    browser: true
-  }), cjs({
-    include: 'node_modules/**'
-  }))
+  plugins.push(
+    nodeResolve({
+      main: true,
+      jsnext: true,
+      browser: true
+    }),
+    cjs({
+      include: 'node_modules/**',
+      ignore: ['most', 'symbol-observable']
+    })
+  )
 }
 
 export default {
