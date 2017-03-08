@@ -19,7 +19,7 @@ if (full) {
     jsnext: true,
     browser: true
   }), cjs({
-    include: 'node_modules/superagent/**'
+    include: 'node_modules/**'
   }))
 }
 
