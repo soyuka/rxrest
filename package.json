@@ -2,10 +2,7 @@
   "name": "rxrest",
   "version": "2.0.5",
   "description": "RxRest a reactive REST utility",
-  "main": "build/rxrest.bundle.min.js",
-  "browser": "build/rxrest.bundle.min.js",
-  "jsnext:main": "lib/index.js",
-  "module": "lib/index.js",
+  "main": "build/rxrest.js",
   "scripts": {
     "lint": "tslint -c tslint.json src/*.ts",
     "coverage": "istanbul cover _mocha test/index.js",
@@ -13,12 +10,6 @@
     "build": "tsc",
     "bundle": "bash build.sh"
   },
-  "files": [
-    "src",
-    "lib",
-    "build",
-    "type-definitions"
-  ],
   "keywords": [
     "REST",
     "Reactive",
