@@ -30,7 +30,7 @@ if (full) {
 
 export default {
   entry: 'src/index.ts',
-  format: 'umd',
+  format: 'cjs',
   moduleName: 'rxrest',
   plugins: plugins,
   dest: `build/rxrest${full ? '.bundle' : ''}${prod ? '.min' : ''}.js`,

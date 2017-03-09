@@ -199,17 +199,17 @@ export class RxRestCollection<T> extends RxRest<T>
 }
 
 export class NewRxRest {
-  one<T>(route: string, id?: any): RxRestItem<T> {
+  one<T>(route: string, id?: any): RxRestItem<T> & T {
     let r = new RxRest()
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string): RxRestCollection<T> {
+  all<T>(route: string): RxRestCollection<T> & T {
     let r = new RxRest()
     return r.all.call(r, route)
   }
 
-  fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
+  fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T) {
     let r = new RxRest()
     return r.fromObject.call(r, route, element)
   }

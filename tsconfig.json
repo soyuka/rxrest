@@ -16,8 +16,8 @@
   },
   "files": [
     "superagent.d.ts",
-     "src/fetch.ts",
-     "src/index.ts"
+    "src/fetch.ts",
+    "src/index.ts"
    ],
   "awesomeTypescriptLoaderOptions": {
     "useBabel": true,
