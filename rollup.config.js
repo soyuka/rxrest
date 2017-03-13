@@ -2,9 +2,11 @@ import ts from 'rollup-plugin-typescript'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import uglify from 'rollup-plugin-uglify'
 import cjs from 'rollup-plugin-commonjs'
+import babel from 'rollup-plugin-babel'
 
 const plugins = [
   ts(),
+  babel({exclude: 'node_modules/**'})
 ];
 
 const prod = process.env.NODE_ENV === 'production' || ~process.argv.indexOf('--prod')
