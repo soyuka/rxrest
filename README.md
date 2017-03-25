@@ -49,7 +49,6 @@ rxrest.all('cars')
 ## Menu
 
 -  [Technical concepts](#technical-concepts)
--  [Promise compatibility](#promise-compatibility)
 -  [Configuration](#configuration)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
@@ -68,25 +67,13 @@ This script depends on `superagent` (for a easier XMLHttpRequest usage, compatib
 
 <sup>[^ Back to menu](#menu)</sup>
 
-## Promise compatibility
-
-Sometimes you don't need to subscribe/observe the response. Mostjs already leverage the feature:
-
-```javascript
-
-rxrest.one('foo')
-.get()
-.observe(() => {})
-.then(item => {
-  console.log(item)
-})
-```
-
-<sup>[^ Back to menu](#menu)</sup>
-
 ## Configuration
 
-When setting one of those parameters, it'll be stored globally for every future request made with RxRest.
+Setting up `RxRest` is done via `RxRestConfiguration`:
+
+```
+const config = new RxRestConfiguration()
+```
 
 #### `baseURL`
 
@@ -94,8 +81,9 @@ It is the base url prepending your routes. For example :
 
 ```javascript
 //set the url
-rxrest.baseURL = 'http://localhost/api'
+config.baseURL = 'http://localhost/api'
 
+const rxrest = new RxRest(config)
 //this will request GET http://localhost/api/car/1
 rxrest.one('car', 1)
 .get()
@@ -106,8 +94,9 @@ rxrest.one('car', 1)
 This is the key storing your identifier in your api objects. It defaults to `id`.
 
 ```javascript
-rxrest.identifier = '@id'
+config.identifier = '@id'
 
+const rxrest = new RxRest(config)
 rxrest.one('car', 1)
 
 > RxRestItem { '@id': 1 }
@@ -115,12 +104,13 @@ rxrest.one('car', 1)
 
 #### `headers`
 
-Global headers to add to every request. Those will be overriden by local headers. Accepts an `Object` or an `Headers` instance.
+You can set headers through the configuration, but also change them request-wise:
 
 ```javascript
-const headers = new Headers()
-headers.set('Authorization', 'foobar')
-headers.set('Content-Type', 'application/json')
+config.headers.set('Authorization', 'foobar')
+config.headers.set('Content-Type', 'application/json')
+
+const rxrest = new RxRest(config)
 
 // Performs a GET request on /cars/1 with Authorization and an `application/json` content type header
 rxrest.one('cars', 1).get()
@@ -132,11 +122,12 @@ rxrest.all('cars')
 
 #### `queryParams`
 
-Global query parameters to add to every request. Those will be overriden by local query params. Accepts an `Object` or an `URLSearchParams` instance.
+You can set query parameters through the configuration, but also change them request-wise:
 
 ```javascript
-const params = new URLSearchParams()
-params.set('bearer', 'foobar')
+config.queryParams.set('bearer', 'foobar')
+
+const rxrest = new RxRest(config)
 
 // Performs a GET request on /cars/1?bearer=foobar
 rxrest.one('cars', 1).get()
@@ -181,6 +172,7 @@ config.responseInterceptors.push(function(response) {
 })
 
 // Performs a GET request with a 'foo' header having `bar` as value
+const rxrest = new RxRest(config)
 
 rxrest.one('cars', 1)
 .get()
