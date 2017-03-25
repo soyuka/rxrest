@@ -7,7 +7,6 @@ import {
   BodyParam
 } from './interfaces';
 import { RxRestCollection, RxRestItem } from './index'
-import { fetch as superAgentFetch } from './fetch'
 import { Stream, throwError, of } from 'most'
 import { create } from '@most/create'
 import { objectToMap } from './utils';
@@ -81,8 +80,11 @@ export class RxRest<T> {
    */
   fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
     this.addRoute(route)
-    return Array.isArray(element) ?
-      new RxRestCollection<T>(this.$route, element, this.config) : new RxRestItem<T>(this.$route, element, this.config);
+    if (Array.isArray(element)) {
+      return new RxRestCollection<T>(this.$route, element, this.config)
+    }
+
+    return new RxRestItem<T>(this.$route, element, this.config)
   }
 
   /**

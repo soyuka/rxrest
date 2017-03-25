@@ -417,34 +417,6 @@ interface Model extends HydraItem<Model> {
 ## Angular 2 configuration example
 
 @TODO
-```javascript
-import { ApplicationRef, Injectable } from '@angular/core';
-import { RxRest, NewRxRest } from 'rxrest'
-import { baseURL } from './config'
-
-@Injectable()
-class RxRestInstance {
-  constructor() {
-    this.rxrest = new RxRest()
-    this.rxrest.baseURL = baseURL + '/api'
-  }
-}
-
-@NgModule({
-  //...
-  providers: [
-    //...
-    {provide: NewRxRest, useClass: NewRxRest},
-    RxRestInstance
-  ]
-})
-class AppModule {
-  //DI will call the constructor setting up RxRest
-  constructor(private rxrest: RxRestInstance) {
-    console.log('RxRest base url is: ' + rxrest.baseURL)
-  }
-}
-```
 
 <sup>[^ Back to menu](#menu)</sup>
 
