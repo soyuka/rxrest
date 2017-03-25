@@ -14,12 +14,12 @@ npm install rxrest --save
 ## Example
 
 ```javascript
-const {RxRest} = require('rxrest')
+import { RxRest, RxRestConfig } from 'rxrest'
 
-const rxrest = new RxRest()
+const config = new RxRestConfig()
+config.baseURL = 'http://localhost/api'
 
-rxrest.baseURL = 'http://localhost/api'
-
+const rxrest = new RxRest(config)
 rxrest.all('cars')
 .getList()
 .observe(result => {
@@ -51,7 +51,6 @@ rxrest.all('cars')
 -  [Technical concepts](#technical-concepts)
 -  [Promise compatibility](#promise-compatibility)
 -  [Configuration](#configuration)
--  [Instance lifecycle](#instance-lifecycle)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
 -  [API](#api)
@@ -149,43 +148,6 @@ rxrest.all('cars')
 
 <sup>[^ Back to menu](#menu)</sup>
 
-## Instance lifecycle
-
-As a resource evolves through time, when an instance of RxRest is created, it'll always have the same basis.
-
-For example you might try to do something like this:
-
-```javascript
-const rxrest = new RxRest()
-
-rxrest.all('buses')
-.observe(() => {
-  //do something
-
-  //Here, your RxRest item will have the following url: `/buses/cars/1`
-  rxrest.one('cars/1')
-})
-```
-
-If you want that rxrest creates a new instance every time you use `one` or `all`, you should rather use `NewRxRest`:
-
-```javascript
-import { RxRest, NewRxRest } from 'rxrest'
-
-const RxRestConfig = new RxRest()
-RxRestConfig.baseURL = 'http://localhost/api'
-
-const rxrest = new NewRxRest()
-
-rxrest.all('buses')
-.observe(() => {
-  //do something on /cars/1
-  rxrest.one('cars/1')
-})
-```
-
-<sup>[^ Back to menu](#menu)</sup>
-
 ## Interceptors
 
 You can add custom behaviors on every state of the request. In order those are:
@@ -203,12 +165,12 @@ Each of those can return a Stream, a Promise, their initial altered value, or be
 For example, let's alter the request and the response:
 
 ```javascript
-rxrest.requestInterceptors.push(function(request) {
+config.requestInterceptors.push(function(request) {
   request.headers.set('foo', 'bar')
 })
 
 // This alters the body (note that ResponseBodyHandler below is more appropriate to do so)
-rxrest.responseInterceptors.push(function(response) {
+config.responseInterceptors.push(function(response) {
   return response.text(
   .then(data => {
     data = JSON.parse(data)
@@ -238,7 +200,7 @@ Those are the default values:
 /**
  * This method transforms the requested body to a json string
  */
-rxrest.requestBodyHandler = function(body) {
+config.requestBodyHandler = function(body) {
   if (!body) {
     return undefined
   }
@@ -254,15 +216,13 @@ rxrest.requestBodyHandler = function(body) {
  * This transforms the response in an Object (ie JSON.parse on the body text)
  * should return Promise<Object|Object[]>
  */
-rxrest.responseBodyHandler = function(body) {
+config.responseBodyHandler = function(body) {
   return body.text()
   .then(text => {
     return text ? JSON.parse(text) : null
   })
 }
 ```
-
-[Here is an example](https://gist.github.com/soyuka/f58ae748d7010d625d981d24be6210ae) where handlers are used to parse JSON-Ld in combination with [api-platform](https://github.com/api-platform/api-platform).
 
 <sup>[^ Back to menu](#menu)</sup>
 
@@ -409,7 +369,10 @@ Do a `POST` or a `PUT` request according to whether the resource came from the s
 Interfaces inheritance:
 
 ```typescript
-import { NewRxRest, RxRestItem } from 'rxrest';
+import { RxRest, RxRestItem, RxRestConfig } from 'rxrest';
+
+const config = new RxRestConfig()
+config.baseURL = 'http://localhost'
 
 interface Car extends RxRestItem<Car> {
   id: number;
@@ -417,9 +380,9 @@ interface Car extends RxRestItem<Car> {
   model: string;
 }
 
-const rxrest = new NewRxRest()
+const rxrest = new RxRest(config)
 
-rxrest.one('/cars', 1)
+rxrest.one<Car>('/cars', 1)
 .get()
 .observe((item: Car) => {
   console.log(item.model)
@@ -453,6 +416,7 @@ interface Model extends HydraItem<Model> {
 
 ## Angular 2 configuration example
 
+@TODO
 ```javascript
 import { ApplicationRef, Injectable } from '@angular/core';
 import { RxRest, NewRxRest } from 'rxrest'
