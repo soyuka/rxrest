@@ -7,7 +7,15 @@ declare namespace RxRest {
   function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
   class RxRest<T> {
-    constructor (route?: string[]);
+    constructor (config: RxRestConfiguration);
+    one<T>(route: string, id?: any): RxRestItem<T> & T;
+    all<T>(route: string): RxRestCollection<T> & T;
+    fromObject<T>(route: string, element: T|T[]): RxRestItem<T> & T|RxRestCollection<T> & T;
+  }
+
+  class AbstractRxRest<T> {
+    constructor (route?: string[], config?: RxRestConfiguration);
+    private config;
     json(): string;
     one<T>(route: string, id?: any): RxRestItem<T>;
     all<T>(route: string): RxRestCollection<T>;
@@ -23,9 +31,9 @@ declare namespace RxRest {
     URL: string;
     baseURL: string;
     identifier: string;
-    setQueryParams(params: any): RxRest<T>;
+    setQueryParams(params: any): AbstractRxRest<T>;
     localQueryParams: any;
-    setHeaders(params: any): RxRest<T>;
+    setHeaders(params: any): AbstractRxRest<T>;
     localHeaders: any;
     headers: any;
     queryParams: any;
@@ -45,14 +53,14 @@ declare namespace RxRest {
     abortCallback: (req: Request) => void;
   }
 
-  class RxRestItem<T> extends RxRest<T> {
+  class RxRestItem<T> extends AbstractRxRest<T> {
     $element: T;
     save<T>(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
     clone<T>(): RxRestItem<T>;
     plain(): T;
   }
 
-  class RxRestCollection<T> extends RxRest<T> implements Iterable<RxRestItem<T>> {
+  class RxRestCollection<T> extends AbstractRxRest<T> implements Iterable<RxRestItem<T>> {
     length: number;
     [Symbol.iterator]: () => Iterator<RxRestItem<T>>;
     $elements: RxRestItem<T>[];

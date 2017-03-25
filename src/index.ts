@@ -1,10 +1,9 @@
 import { Stream } from 'most'
 import { RxRestProxyHandler } from './RxRestProxyHandler'
-import { RxRest } from './RxRest'
+import { RxRest as AbstractRxRest } from './RxRest'
+import { RxRestConfiguration } from './RxRestConfiguration';
 
-export type BodyParam<T> = RxRestItem<T>|FormData|URLSearchParams|Body|Blob|undefined|Object;
-
-export class RxRestItem<T> extends RxRest<T> {
+export class RxRestItem<T> extends AbstractRxRest<T> {
   $element: T = {} as T;
 
   /**
@@ -14,8 +13,8 @@ export class RxRestItem<T> extends RxRest<T> {
    * @param {T} [element]
    * @return {Proxy}
    */
-  constructor(route: string[], element?: T) {
-    super(route)
+  constructor(route: string[], element?: T, config?: RxRestConfiguration) {
+    super(config, route)
 
     if (element !== undefined) {
       this.element = element
@@ -35,8 +34,8 @@ export class RxRestItem<T> extends RxRest<T> {
    */
   save(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request(this.$fromServer === true ? 'PUT' : 'POST', this)
   }
@@ -48,7 +47,7 @@ export class RxRestItem<T> extends RxRest<T> {
    */
   set element(element: T) {
     for (let i in element) {
-      if (i === this.identifier && !this.$element[this.identifier]) {
+      if (i === this.config.identifier && !this.$element[this.config.identifier]) {
         this.$route.push('' + element[i])
       }
 
@@ -89,17 +88,17 @@ export class RxRestItem<T> extends RxRest<T> {
   clone(): RxRestItem<T> {
     let route = this.$route
 
-    if (this.$element[this.identifier]) {
+    if (this.$element[this.config.identifier]) {
       route = route.slice(0, this.$route.length - 1)
     }
 
-    let clone = new RxRestItem(route, this.$element)
+    let clone = new RxRestItem(route, this.$element, this.config)
     clone.$fromServer = this.$fromServer
     return clone
   }
 }
 
-export class RxRestCollection<T> extends RxRest<T>
+export class RxRestCollection<T> extends AbstractRxRest<T>
   implements Iterable<RxRestItem<T>>, RxRestCollection<T> {
   length: number;
   $elements: RxRestItem<T>[] = [];
@@ -112,8 +111,9 @@ export class RxRestCollection<T> extends RxRest<T>
    * @param {T[]|RxRestItem<T>[]]} [elements]
    * @return {Proxy}
    */
-  constructor(route: string[], elements?: T[]|RxRestItem<T>[]) {
-    super(route)
+  constructor(route: string[], elements?: T[]|RxRestItem<T>[], config?: RxRestConfiguration) {
+    super(config, route)
+
     if (elements !== undefined) {
       this.elements = (elements as any).map((e: any) =>
         e instanceof RxRestItem ? e.clone() : new RxRestItem(this.$route, e)
@@ -146,8 +146,8 @@ export class RxRestCollection<T> extends RxRest<T>
    */
   getList(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('GET')
   }
@@ -194,25 +194,28 @@ export class RxRestCollection<T> extends RxRest<T>
    * @returns {RxRestCollection}
    */
   clone(): RxRestCollection<T> {
-    return new RxRestCollection<T>(this.$route, this.$elements)
+    return new RxRestCollection<T>(this.$route, this.$elements, this.config)
   }
 }
 
-export class NewRxRest {
+export class RxRest {
+  constructor(private config: RxRestConfiguration) {
+  }
+
   one<T>(route: string, id?: any): RxRestItem<T> & T {
-    let r = new RxRest()
+    let r = new AbstractRxRest(this.config)
     return r.one.call(r, route, id)
   }
 
   all<T>(route: string): RxRestCollection<T> & T {
-    let r = new RxRest()
+    let r = new AbstractRxRest(this.config)
     return r.all.call(r, route)
   }
 
   fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T) {
-    let r = new RxRest()
+    let r = new AbstractRxRest(this.config)
     return r.fromObject.call(r, route, element)
   }
 }
 
-export {RxRest}
+export { RxRestConfiguration }

@@ -1,4 +1,7 @@
-import {Stream} from 'most'
+import { Stream } from 'most'
+import { RxRestItem } from './index'
+
+export type BodyParam<T> = RxRestItem<T>|FormData|URLSearchParams|Body|Blob|undefined|Object;
 
 export interface RequestInterceptor {
   (request: Request): Stream<Request>|Promise<Request>|undefined|Request|void;

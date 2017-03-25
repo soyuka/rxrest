@@ -1,22 +1,16 @@
-import { RxRestConfiguration } from './RxRestConfiguration'
+import { RxRestConfiguration } from './RxRestConfiguration';
 import {
   RequestInterceptor,
   ResponseInterceptor,
   ErrorInterceptor,
-  ErrorResponse
+  ErrorResponse,
+  BodyParam
 } from './interfaces';
-import { RxRestCollection, RxRestItem, BodyParam } from './index'
+import { RxRestCollection, RxRestItem } from './index'
 import { fetch as superAgentFetch } from './fetch'
 import { Stream, throwError, of } from 'most'
 import { create } from '@most/create'
-
-export interface RequestBodyHandler<T> {
-  (body: BodyParam<T>): FormData|URLSearchParams|Body|Blob|undefined|string|Promise<any>
-}
-
-export interface ResponseBodyHandler {
-  (body: Response): Promise<any>
-}
+import { objectToMap } from './utils';
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -29,35 +23,21 @@ const fromPromise = function(promise: Promise<any>) {
   })
 }
 
-function objectToMap(map: URLSearchParams | Headers, item: any): any {
-  for (let key in item) {
-    if (Array.isArray(item[key])) {
-      for (let i = 0; i < item[key].length; i++) {
-        map.append(key, item[key][i])
-      }
-    } else {
-      map.append(key, item[key])
-    }
-  }
-
-  return map
-}
-
-const Config = new RxRestConfiguration()
-
 export class RxRest<T> {
   protected $route: string[]
   $fromServer: boolean = false
   $queryParams: URLSearchParams = new URLSearchParams()
   $headers: Headers = new Headers()
+  config: RxRestConfiguration
 
   /**
    * constructor
    *
    * @param {String} [route] the resource route
    */
-  constructor(route?: string[]) {
+  constructor(config: RxRestConfiguration = new RxRestConfiguration(), route?: string[]) {
     this.$route = route === undefined ? [] : [...route]
+    this.config = config
   }
 
   protected addRoute(route: string): void {
@@ -75,10 +55,10 @@ export class RxRest<T> {
     this.addRoute(route)
     let o = {} as T
     if (id) {
-      o[this.identifier] = id
+      o[this.config.identifier] = id
     }
 
-    return new RxRestItem<T>(this.$route, o)
+    return new RxRestItem<T>(this.$route, o, this.config)
   }
 
   /**
@@ -89,7 +69,7 @@ export class RxRest<T> {
    */
   all<T>(route: string): RxRestCollection<T> {
     this.addRoute(route)
-    return new RxRestCollection<T>(this.$route)
+    return new RxRestCollection<T>(this.$route, undefined, this.config)
   }
 
   /**
@@ -102,7 +82,7 @@ export class RxRest<T> {
   fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
     this.addRoute(route)
     return Array.isArray(element) ?
-      new RxRestCollection<T>(this.$route, element) : new RxRestItem<T>(this.$route, element);
+      new RxRestCollection<T>(this.$route, element, this.config) : new RxRestItem<T>(this.$route, element, this.config);
   }
 
   /**
@@ -124,8 +104,8 @@ export class RxRest<T> {
    */
   post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('POST', this.withBody(body))
   }
@@ -139,8 +119,8 @@ export class RxRest<T> {
    */
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('DELETE')
   }
@@ -154,8 +134,8 @@ export class RxRest<T> {
    */
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('GET')
   }
@@ -170,8 +150,8 @@ export class RxRest<T> {
    */
   put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('PUT', this.withBody(body))
   }
@@ -186,8 +166,8 @@ export class RxRest<T> {
    */
   patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('PATCH', this.withBody(body))
   }
@@ -201,8 +181,8 @@ export class RxRest<T> {
    */
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('HEAD')
   }
@@ -216,8 +196,8 @@ export class RxRest<T> {
    */
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('TRACE')
   }
@@ -231,8 +211,8 @@ export class RxRest<T> {
    */
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<RxRestItem<T>|RxRestCollection<T>> {
-    this.localQueryParams = queryParams
-    this.localHeaders = headers
+    this.queryParams = queryParams
+    this.headers = headers
 
     return this.request('OPTIONS')
   }
@@ -243,53 +223,14 @@ export class RxRest<T> {
    * @returns {string}
    */
   get URL(): string {
-    return `${Config.baseURL}${this.$route.join('/')}`
-  }
-
-  /**
-   * set baseURL
-   *
-   * @param {String} base
-   * @returns
-   */
-  set baseURL(base: string) {
-    if (base.charAt(base.length - 1) !== '/') {
-      base += '/'
-    }
-
-    Config.baseURL = base
-  }
-
-  /**
-   * get baseURL
-   *
-   * @returns {string}
-   */
-  get baseURL(): string {
-    return Config.baseURL
-  }
-
-  /**
-   * Set identifier key
-   *
-   * @param {String} id
-   */
-  set identifier(id: string) {
-    Config.identifier = id
-  }
-
-  /**
-   * Get identifier key
-   */
-  get identifier(): string {
-    return Config.identifier
+    return `${this.config.baseURL}${this.$route.join('/')}`
   }
 
   /**
    * set local query params
    * @param {Object|URLSearchParams} params
    */
-  set localQueryParams(params: any) {
+  set queryParams(params: any) {
     if (!params) {
       return
     }
@@ -308,7 +249,7 @@ export class RxRest<T> {
    * @return this
    */
   setQueryParams(params: any): RxRest<T> {
-    this.localQueryParams = params
+    this.queryParams = params
     return this
   }
 
@@ -318,7 +259,7 @@ export class RxRest<T> {
    * @return this
    */
   setHeaders(params: any): RxRest<T> {
-    this.localHeaders = params
+    this.headers = params
     return this
   }
 
@@ -326,34 +267,8 @@ export class RxRest<T> {
    * Get local query params
    * @return URLSearchParams
    */
-  get localQueryParams(): any {
-    return this.$queryParams
-  }
-
-  /**
-   * Set global query params
-   * @param {Object|URLSearchParams} params
-   */
-  set queryParams(params: any) {
-    if (params instanceof URLSearchParams) {
-      Config.queryParams = params
-      return
-    }
-
-    if (typeof params === 'string') {
-      Config.queryParams = new URLSearchParams(params)
-      return
-    }
-
-    Config.queryParams = objectToMap(new URLSearchParams(), params)
-  }
-
-  /**
-   * Get global query params
-   * @return {URLSearchParams}
-   */
   get queryParams(): any {
-    return Config.queryParams
+    return this.$queryParams
   }
 
   /**
@@ -365,11 +280,11 @@ export class RxRest<T> {
   get requestQueryParams(): string {
     let params = new URLSearchParams()
 
-    for (let param of this.queryParams) {
+    for (let param of this.config.queryParams) {
       params.append(param[0], param[1])
     }
 
-    for (let param of this.localQueryParams) {
+    for (let param of this.queryParams) {
       params.append(param[0], param[1])
     }
 
@@ -386,7 +301,7 @@ export class RxRest<T> {
    * Set local headers
    * @param {Object|Headers} params
    */
-  set localHeaders(params: any) {
+  set headers(params: any) {
     if (!params) {
       return
     }
@@ -403,29 +318,8 @@ export class RxRest<T> {
    * Get local headers
    * @return Headers
    */
-  get localHeaders(): any {
-    return this.$headers
-  }
-
-  /**
-   * set global headers
-   * @param {Object|Headers} params
-   */
-  set headers(params: any) {
-     if (params instanceof Headers) {
-      Config.headers = params
-      return
-    }
-
-    Config.headers = objectToMap(new Headers(), params)
- }
-
-  /**
-   * Get global headers
-   * @return Headers
-   */
   get headers(): any {
-    return Config.headers
+    return this.$headers
   }
 
   /**
@@ -442,122 +336,11 @@ export class RxRest<T> {
       headers.append(header[0], header[1])
     }
 
-    for (let header of this.localHeaders) {
+    for (let header of this.config.headers) {
       headers.append(header[0], header[1])
     }
 
     return headers
-  }
-
-  /**
-   * get requestInterceptors
-   *
-   * @returns {RequestInterceptor[]}
-   */
-  get requestInterceptors(): RequestInterceptor[] {
-    return Config.requestInterceptors
-  }
-
-  /**
-   * set requestInterceptors
-   *
-   * @param {RequestInterceptor[]} requestInterceptors
-   */
-  set requestInterceptors(requestInterceptors: RequestInterceptor[]) {
-    Config.requestInterceptors = requestInterceptors
-  }
-
-  /**
-   * get responseInterceptors
-   *
-   * @returns {ResponseInterceptor[]}
-   */
-  get responseInterceptors(): ResponseInterceptor[] {
-    return Config.responseInterceptors
-  }
-
-  /**
-   * set responseInterceptors
-   *
-   * @param {ResponseInterceptor[]} responseInterceptor
-   */
-  set responseInterceptors(responseInterceptor: ResponseInterceptor[]) {
-    Config.responseInterceptors = responseInterceptor
-  }
-
-  /**
-   * get errorInterceptors
-   *
-   * @returns {ErrorInterceptor[]}
-   */
-  get errorInterceptors(): ErrorInterceptor[] {
-    return Config.errorInterceptors
-  }
-
-  /**
-   * set errorInterceptors
-   *
-   * @param {ErrorInterceptor[]} errorInterceptors
-   */
-  set errorInterceptors(errorInterceptors: ErrorInterceptor[]) {
-    Config.errorInterceptors = errorInterceptors
-  }
-
-  /**
-   * set requestBodyHandler
-   *
-   * @param {Function} fn
-   */
-  set requestBodyHandler(fn: RequestBodyHandler<T>) {
-    Config.requestBodyHandler = fn
-  }
-
-  /**
-   * requestBodyHandler
-   *
-   * @returns {Function}
-   */
-  get requestBodyHandler(): RequestBodyHandler<T> {
-    return Config.requestBodyHandler
-  }
-
-  /**
-   * set responseBodyHandler
-   * @param {ResponseBodyHandler} fn
-   */
-  set responseBodyHandler(fn: ResponseBodyHandler) {
-    Config.responseBodyHandler = fn
-  }
-
-  /**
-   * get responseBodyHandler
-   *
-   * @returns {ResponseBodyHandler}
-   */
-  get responseBodyHandler(): ResponseBodyHandler {
-    return Config.responseBodyHandler
-  }
-
-  /**
-   * @param fn the callback that will be called on request abortion
-   */
-  set abortCallback(fn: (req: Request) => void) {
-    Config.abortCallback = fn
-  }
-
-  /**
-   * @return fn the current cancel callback
-   */
-  get abortCallback(): (req: Request) => void {
-    return Config.abortCallback
-  }
-
-  get fetch(): any {
-    return Config.fetch ? Config.fetch : superAgentFetch
-  }
-
-  set fetch(fn: any) {
-    Config.fetch = fn
   }
 
   /**
@@ -604,16 +387,16 @@ export class RxRest<T> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
-      body: this.requestBodyHandler(body)
+      body: this.config.requestBodyHandler(body)
     }
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
     let stream = <Stream<RxRestItem<T> & T>> of(request)
-    .flatMap(this.expandInterceptors(Config.requestInterceptors))
-    .flatMap(request => this.fetch(request, null, this.abortCallback))
-    .flatMap(this.expandInterceptors(Config.responseInterceptors))
-    .flatMap(body => fromPromise(this.responseBodyHandler(body)))
+    .flatMap(this.expandInterceptors(this.config.requestInterceptors))
+    .flatMap(request => this.config.fetch(request, null, this.config.abortCallback))
+    .flatMap(this.expandInterceptors(this.config.responseInterceptors))
+    .flatMap(body => fromPromise(this.config.responseBodyHandler(body)))
     .flatMap(body => {
       if (!Array.isArray(body)) {
         let item: RxRestItem<T>
@@ -621,7 +404,7 @@ export class RxRest<T> {
           item = this
           item.element = body as T
         } else {
-          item = new RxRestItem(this.$route, body as T)
+          item = new RxRestItem(this.$route, body as T, this.config)
         }
 
         item.$fromServer = true
@@ -632,10 +415,10 @@ export class RxRest<T> {
       }
 
       let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
-        let item = new RxRestItem(this.$route, e)
+        let item = new RxRestItem(this.$route, e, this.config)
         item.$fromServer = true
         return item
-      }))
+      }), this.config)
 
       return create((add, end, error) => {
         for (let item of collection) {
@@ -647,7 +430,7 @@ export class RxRest<T> {
     })
     .recoverWith(body => {
       return of(body)
-      .flatMap(this.expandInterceptors(Config.errorInterceptors))
+      .flatMap(this.expandInterceptors(this.config.errorInterceptors))
       .flatMap((body: ErrorResponse) => throwError(body))
     })
 
