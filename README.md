@@ -49,6 +49,7 @@ rxrest.all('cars')
 ## Menu
 
 -  [Technical concepts](#technical-concepts)
+-  [Promise compatibility](#promise-compatibility)
 -  [Configuration](#configuration)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
@@ -67,11 +68,26 @@ This script depends on `superagent` (for a easier XMLHttpRequest usage, compatib
 
 <sup>[^ Back to menu](#menu)</sup>
 
+## Promise compatibility
+
+Sometimes you don't need to subscribe/observe the response. Mostjs already leverage the feature:
+
+```javascript
+
+rxrest.one('foo')
+.get()
+.observe(() => {})
+.then(item => {
+  console.log(item)
+})
+```
+
+<sup>[^ Back to menu](#menu)</sup>
 ## Configuration
 
 Setting up `RxRest` is done via `RxRestConfiguration`:
 
-```
+```javascript
 const config = new RxRestConfiguration()
 ```
 
@@ -106,7 +122,7 @@ rxrest.one('car', 1)
 
 You can set headers through the configuration, but also change them request-wise:
 
-```javascript
+config.headers
 config.headers.set('Authorization', 'foobar')
 config.headers.set('Content-Type', 'application/json')
 
