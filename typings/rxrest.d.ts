@@ -6,7 +6,7 @@ import { Stream } from 'most'
 declare namespace RxRest {
   function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
-  class RxRest<T> {
+  class RxRest {
     constructor (config: RxRestConfiguration);
     one<T>(route: string, id?: any): RxRestItem<T> & T;
     all<T>(route: string): RxRestCollection<T> & T;
