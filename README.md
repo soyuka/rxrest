@@ -424,7 +424,57 @@ interface Model extends HydraItem<Model> {
 
 ## Angular 2 configuration example
 
-@TODO
+First, let's declare our providers:
+
+```typescript
+import { Injectable, NgModule, Component, OnInit } from '@angular/core'
+import { RxRest, RxRestConfiguration } from 'rxrest'
+
+@Injectable()
+export class AngularRxRestConfiguration extends RxRestConfiguration {
+  constructor() {
+    super()
+    this.baseURL = 'localhost/api'
+  }
+}
+
+@Injectable()
+export class AngularRxRest extends RxRest {
+  constructor(config: RxRestConfiguration) {
+    super(config)
+  }
+}
+
+@NgModule({
+  providers: [
+    {provide: RxRest, useClass: AngularRxRest},
+    {provide: RxRestConfiguration, useClass: AngularRxRestConfiguration},
+  ]
+})
+export class SomeModule {
+}
+
+```
+
+Then, just inject `RxRest`:
+
+```typescript
+export interface Car {
+  name: string
+}
+
+@Component({
+  template: '<ul><li *ngFor="let car of cars | async">{{car.name}}</li></ul>'
+})
+export class FooComponent implements OnInit {
+  constructor(private rxrest: RxRest) {
+  }
+
+  ngOnInit() {
+    this.cars = this.rxrest.all<Car>('cars').get()
+  }
+}
+```
 
 <sup>[^ Back to menu](#menu)</sup>
 
