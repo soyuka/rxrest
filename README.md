@@ -122,6 +122,7 @@ rxrest.one('car', 1)
 
 You can set headers through the configuration, but also change them request-wise:
 
+```javascript
 config.headers
 config.headers.set('Authorization', 'foobar')
 config.headers.set('Content-Type', 'application/json')
