@@ -29,7 +29,7 @@
     "form-data": "^2.1.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.1.0",
-    "node-fetch": "github:bitinn/node-fetch#5fe80dba06fbf384cc712a299c698b884a857cfc",
+    "node-fetch": "^2.0.0-alpha.3",
     "rollup": "^0.41.4",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^7.1.0",
