@@ -1,11 +1,11 @@
-import { RequestOptions, ErrorResponse, RequestWithHeaders } from './interfaces'
+import {ErrorResponse, RequestWithHeaders } from './interfaces'
 import * as superagent from 'superagent'
 import {Stream, fromPromise} from 'most'
 import {create} from '@most/create'
 
 export function fetch(
   input: string|RequestWithHeaders,
-  init?: RequestOptions,
+  init?: RequestInit,
   abortCallback?: (req: Request) => void
 ): Stream<any> {
 
@@ -36,6 +36,7 @@ export function fetch(
           return end()
         }
 
+        res.url = (input as Request).url
         let response = new Response(res.text, res)
 
         add(response)

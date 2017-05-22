@@ -20,18 +20,6 @@ export interface ErrorResponse extends Response {
   message: string;
 }
 
-export interface RequestOptions {
-  method: string;
-  headers?: Headers;
-  body?: Body|Blob|FormData|URLSearchParams|Object;
-  mode?: string;
-  credentials?: string;
-  cache?: string;
-  redirect?: string;
-  referrer?: string;
-  integrity?: string;
-}
-
 export interface FixedHeaders extends Map<string, string> {
   append: (name: string, value: string) => void;
   getAll: () => Object[];
@@ -39,4 +27,5 @@ export interface FixedHeaders extends Map<string, string> {
 
 export interface RequestWithHeaders extends Request {
   headers: FixedHeaders;
+  url: string;
 }
