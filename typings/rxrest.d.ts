@@ -50,6 +50,7 @@ declare namespace RxRest {
     $fromServer: boolean;
     $queryParams: URLSearchParams;
     $headers: Headers;
+    $metadata: any;
     abortCallback: (req: Request) => void;
   }
 
