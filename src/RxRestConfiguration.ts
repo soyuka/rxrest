@@ -62,10 +62,10 @@ export class RxRestConfiguration {
    * @reject when response is an error
    * @returns {Promise<any>}
    */
-  _responseBodyHandler(body: Response): Promise<any> {
+  _responseBodyHandler(body: Response): Promise<{body: any, metadata: any}> {
     return body.text()
     .then(text => {
-      return text ? JSON.parse(text) : null
+      return {body: text ? JSON.parse(text) : null, metadata: null}
     })
   }
 

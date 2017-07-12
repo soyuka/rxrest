@@ -28,15 +28,21 @@ export class RxRest<T> {
   $queryParams: URLSearchParams = new URLSearchParams()
   $headers: Headers = new Headers()
   config: RxRestConfiguration
+  $metadata: any
 
   /**
    * constructor
    *
    * @param {String} [route] the resource route
    */
-  constructor(config: RxRestConfiguration = new RxRestConfiguration(), route?: string[]) {
+  constructor(
+    config: RxRestConfiguration = new RxRestConfiguration(),
+    route?: string[],
+    metadata?: any
+  ) {
     this.$route = route === undefined ? [] : [...route]
     this.config = config
+    this.$metadata = metadata
   }
 
   protected addRoute(route: string): void {
@@ -399,17 +405,19 @@ export class RxRest<T> {
     .flatMap(request => this.config.fetch(request, null, this.config.abortCallback))
     .flatMap(this.expandInterceptors(this.config.responseInterceptors))
     .flatMap(body => fromPromise(this.config.responseBodyHandler(body)))
-    .flatMap(body => {
+    .flatMap(({body, metadata}) => {
       if (!Array.isArray(body)) {
         let item: RxRestItem<T>
         if (this instanceof RxRestItem) {
           item = this
           item.element = body as T
+          item.$metadata = metadata
         } else {
-          item = new RxRestItem(this.$route, body as T, this.config)
+          item = new RxRestItem(this.$route, body as T, this.config, metadata)
         }
 
         item.$fromServer = true
+
         return create((add, end, error) => {
           add(item)
           end(item)
@@ -417,10 +425,10 @@ export class RxRest<T> {
       }
 
       let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
-        let item = new RxRestItem(this.$route, e, this.config)
+        let item = new RxRestItem(this.$route, e, this.config, metadata)
         item.$fromServer = true
         return item
-      }), this.config)
+      }), this.config, metadata)
 
       return create((add, end, error) => {
         for (let item of collection) {

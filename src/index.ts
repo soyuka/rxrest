@@ -13,8 +13,8 @@ export class RxRestItem<T> extends AbstractRxRest<T> {
    * @param {T} [element]
    * @return {Proxy}
    */
-  constructor(route: string[], element?: T, config?: RxRestConfiguration) {
-    super(config, route)
+  constructor(route: string[], element?: T, config?: RxRestConfiguration, metadata?: any) {
+    super(config, route, metadata)
 
     if (element !== undefined) {
       this.element = element
@@ -111,8 +111,12 @@ export class RxRestCollection<T> extends AbstractRxRest<T>
    * @param {T[]|RxRestItem<T>[]]} [elements]
    * @return {Proxy}
    */
-  constructor(route: string[], elements?: T[]|RxRestItem<T>[], config?: RxRestConfiguration) {
-    super(config, route)
+  constructor(
+    route: string[],
+    elements?: T[]|RxRestItem<T>[],
+    config?: RxRestConfiguration, metadata?: any
+  ) {
+    super(config, route, metadata)
 
     if (elements !== undefined) {
       this.elements = (elements as any).map((e: any) =>

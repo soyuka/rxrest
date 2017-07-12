@@ -362,12 +362,16 @@ describe('RxRest', function() {
     config.responseBodyHandler = function(body) {
       spy()
       return body.text()
+      .then((t) => {
+        return {body: JSON.parse(t), metadata: 'foo'}
+      })
     }
 
     return rxrest.one('test', 3)
-    .options()
+    .get()
     .observe(e => {
       expect(e).to.be.an.instanceof(RxRestItem)
+      expect(e.$metadata).to.equal('foo')
       expect(spy).to.have.been.called.exactly(2)
     })
   })
@@ -521,4 +525,27 @@ describe('RxRest', function() {
       source.subscribe((v) => {}, () => {}, () => cb())
   })
 
+  it('should get options', function() {
+    let spy = chai.spy(function() {})
+
+    config.requestBodyHandler = function(body) {
+      spy()
+      return undefined
+    }
+
+    config.responseBodyHandler = function(body) {
+      spy()
+      return body.text()
+      .then((t) => {
+        return {body: t}
+      })
+    }
+
+    return rxrest.one('test', 3)
+    .options()
+    .observe(e => {
+      expect(e).to.be.an.instanceof(RxRestItem)
+      expect(spy).to.have.been.called.exactly(2)
+    })
+  })
 })

@@ -223,12 +223,12 @@ config.requestBodyHandler = function(body) {
 
 /**
  * This transforms the response in an Object (ie JSON.parse on the body text)
- * should return Promise<Object|Object[]>
+ * should return Promise<{body: any, metadata: any}>
  */
 config.responseBodyHandler = function(body) {
   return body.text()
   .then(text => {
-    return text ? JSON.parse(text) : null
+    return {body: text ? JSON.parse(text) : null, metadata: null}
   })
 }
 ```
