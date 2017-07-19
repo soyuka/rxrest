@@ -9,7 +9,7 @@ declare namespace RxRest {
   class RxRest {
     constructor (config: RxRestConfiguration);
     one<T>(route: string, id?: any): RxRestItem<T> & T;
-    all<T>(route: string): RxRestCollection<T> & T;
+    all<T>(route: string, asIterable?: boolean): RxRestCollection<T> & T;
     fromObject<T>(route: string, element: T|T[]): RxRestItem<T> & T|RxRestCollection<T> & T;
   }
 
@@ -18,7 +18,8 @@ declare namespace RxRest {
     private config;
     json(): string;
     one<T>(route: string, id?: any): RxRestItem<T>;
-    all<T>(route: string): RxRestCollection<T>;
+    all<T>(route: string, asIterable?: boolean): RxRestCollection<T>;
+    asIterable(): this;
     fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T>;
     post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
     put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
@@ -51,6 +52,7 @@ declare namespace RxRest {
     $queryParams: URLSearchParams;
     $headers: Headers;
     $metadata: any;
+    $asIterable: boolean;
     abortCallback: (req: Request) => void;
   }
 
