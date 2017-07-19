@@ -268,6 +268,11 @@ config.responseBodyHandler = function(body) {
 }
 ```
 
+In the `responseBodyHandler`, you can note that we're returning an object containing:
+
+1. `body` - the javascript Object or Array that will be transformed in a RxRestItem or RxRestCollection
+2. `metadata` - an API request sometimes gives us metadata (for example pagination metadata), add it here to be able to retrieve `item.$metadata` later
+
 <sup>[^ Back to menu](#menu)</sup>
 
 ## API
