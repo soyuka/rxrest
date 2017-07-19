@@ -21,7 +21,7 @@ config.baseURL = 'http://localhost/api'
 
 const rxrest = new RxRest(config)
 rxrest.all('cars')
-.getList()
+.get()
 .observe(result => {
   console.log(result) // RxRestItem
 })
@@ -50,6 +50,7 @@ rxrest.all('cars')
 
 -  [Technical concepts](#technical-concepts)
 -  [Promise compatibility](#promise-compatibility)
+-  [One-event Stream instead of multiple events](#one-event-stream-instead-of-multiple-events)
 -  [Configuration](#configuration)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
@@ -80,6 +81,40 @@ rxrest.one('foo')
 .then(item => {
   console.log(item)
 })
+```
+
+<sup>[^ Back to menu](#menu)</sup>
+## One-event Stream instead of multiple events
+
+Sometimes, you don't want RxRest to emit one event per item in the collection but only one event for the whole collection.
+
+To do so, just call `asIterable`:
+
+```javascript
+rxrest.all('foos')
+.asIterable()
+.get()
+// only one event with the collection
+.observe((e) => {})
+```
+
+Or use the second argument of `.all` instead of `asIterable`:
+
+```javascript
+rxrest.all('foos', true)
+.get()
+// only one event with the collection
+.observe((e) => {})
+```
+
+This can be useful if you work with, say angular:
+
+```javascript
+this.data = Observable.from(rxrest.all('foos', true).get())
+```
+
+```html
+<div *ngFor="let d of data | async"></div>
 ```
 
 <sup>[^ Back to menu](#menu)</sup>
@@ -247,7 +282,7 @@ There are two prototypes:
 
 Creates an RxRestItem on the requested route.
 
-#### `all(route: string): RxRestCollection`
+#### `all(route: string, asIterable: boolean = false): RxRestCollection`
 
 Creates an RxRestCollection on the requested route
 

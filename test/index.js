@@ -299,8 +299,7 @@ describe('RxRest', function() {
 
     return rxrest.one('404')
     .head()
-    .observe(e => {
-    })
+    .observe(e => {})
     .catch((e) => {
       expect(spy).to.have.been.called
       expect(e.status).to.equal(404)
@@ -546,6 +545,73 @@ describe('RxRest', function() {
     .observe(e => {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(spy).to.have.been.called.exactly(2)
+    })
+  })
+
+  it('should get all as iterable', function() {
+    let params = new URLSearchParams()
+    params.set('foo', 'bar')
+
+    let headers = new Headers()
+    headers.set('Accept', 'application/json')
+
+    config.requestInterceptors.push(function(request) {
+      expect(request.headers.has('Accept')).to.be.true
+    })
+
+    return rxrest.all('test')
+    .asIterable()
+    .get(params, headers)
+    .observe((values) => {
+      expect(values).to.be.an.instanceof(RxRestCollection)
+      for (let item of values) {
+        expect(item).to.be.an.instanceof(RxRestItem)
+        expect(item.URL).to.equal('http://localhost:3333/test/3')
+        expect(item.$fromServer).to.be.true
+      }
+
+      expect(values.URL).to.equal('http://localhost:3333/test')
+
+      expect(values.plain()).to.deep.equal([{foo: 'bar', id: 3}])
+      expect(values.json()).to.equal(JSON.stringify([{foo: 'bar', id: 3}]))
+
+      let clone = values.clone()
+
+      expect(clone[0].$fromServer).to.be.true
+      expect(clone.plain()).to.deep.equal([{foo: 'bar', id: 3}])
+    })
+  })
+
+  it('should get all as iterable (2nd way of doing it)', function() {
+    let params = new URLSearchParams()
+    params.set('foo', 'bar')
+
+    let headers = new Headers()
+    headers.set('Accept', 'application/json')
+
+    config.requestInterceptors.push(function(request) {
+      expect(request.headers.has('Accept')).to.be.true
+    })
+
+    return rxrest.all('test', true)
+    .get(params, headers)
+    .observe((values) => {
+      expect(values).to.be.an.instanceof(RxRestCollection)
+      for (let item of values) {
+        expect(item).to.be.an.instanceof(RxRestItem)
+        expect(item.URL).to.equal('http://localhost:3333/test/3')
+        expect(item.$fromServer).to.be.true
+      }
+
+      expect(values.URL).to.equal('http://localhost:3333/test')
+
+      expect(values.plain()).to.deep.equal([{foo: 'bar', id: 3}])
+      expect(values.json()).to.equal(JSON.stringify([{foo: 'bar', id: 3}]))
+
+      let clone = values.clone()
+
+      expect(clone[0].$fromServer).to.be.true
+      expect(clone.plain()).to.deep.equal([{foo: 'bar', id: 3}])
     })
   })
 })

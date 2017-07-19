@@ -25,6 +25,7 @@ const fromPromise = function(promise: Promise<any>) {
 export class RxRest<T> {
   protected $route: string[]
   $fromServer: boolean = false
+  $asIterable: boolean = false
   $queryParams: URLSearchParams = new URLSearchParams()
   $headers: Headers = new Headers()
   config: RxRestConfiguration
@@ -70,11 +71,24 @@ export class RxRest<T> {
    * all
    *
    * @param {String} route
+   * @param {boolean} asIterable - forces the next request to return an Observable<Array>
+   *                               instead of emitting multiple events
    * @returns {RxRestCollection}
    */
-  all<T>(route: string): RxRestCollection<T> {
+  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> {
     this.addRoute(route)
-    return new RxRestCollection<T>(this.$route, undefined, this.config)
+    return new RxRestCollection<T>(this.$route, undefined, this.config, null, asIterable)
+  }
+
+  /**
+   * asIterable - forces the next request to return an Observable<Array>
+   * instead of emitting multiple events
+   *
+   * @returns {self}
+   */
+  asIterable(): this {
+    this.$asIterable = true
+    return this
   }
 
   /**
@@ -431,8 +445,12 @@ export class RxRest<T> {
       }), this.config, metadata)
 
       return create((add, end, error) => {
-        for (let item of collection) {
-          add(item)
+        if (this.$asIterable) {
+          add(collection)
+        } else {
+          for (let item of collection) {
+            add(item)
+          }
         }
 
         end(collection)

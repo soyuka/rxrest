@@ -114,7 +114,9 @@ export class RxRestCollection<T> extends AbstractRxRest<T>
   constructor(
     route: string[],
     elements?: T[]|RxRestItem<T>[],
-    config?: RxRestConfiguration, metadata?: any
+    config?: RxRestConfiguration,
+    metadata?: any,
+    asIterable: boolean = false
   ) {
     super(config, route, metadata)
 
@@ -123,6 +125,8 @@ export class RxRestCollection<T> extends AbstractRxRest<T>
         e instanceof RxRestItem ? e.clone() : new RxRestItem(this.$route, e)
       )
     }
+
+    this.$asIterable = asIterable
 
     const proxy = new Proxy(this.$elements, new RxRestProxyHandler<T>(this))
 
@@ -211,9 +215,9 @@ export class RxRest {
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string): RxRestCollection<T> & T {
+  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> & T {
     let r = new AbstractRxRest(this.config)
-    return r.all.call(r, route)
+    return r.all.call(r, route, asIterable)
   }
 
   fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T) {
