@@ -1,16 +1,16 @@
-import {ErrorResponse, RequestWithHeaders } from './interfaces'
+import {ErrorResponse} from './interfaces'
 import * as superagent from 'superagent'
 import {Stream, fromPromise} from 'most'
 import {create} from '@most/create'
 
 export function fetch(
-  input: string|RequestWithHeaders,
+  input: string|Request,
   init?: RequestInit,
   abortCallback?: (req: Request) => void
 ): Stream<any> {
 
   if (!(input instanceof Request)) {
-    input = new Request(input, init) as RequestWithHeaders
+    input = new Request(input, init)
   }
 
   let req = superagent[input.method.toLowerCase()](input.url)

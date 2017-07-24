@@ -19,13 +19,3 @@ export interface ErrorResponse extends Response {
   name: string;
   message: string;
 }
-
-export interface FixedHeaders extends Map<string, string> {
-  append: (name: string, value: string) => void;
-  getAll: () => Object[];
-}
-
-export interface RequestWithHeaders extends Request {
-  headers: FixedHeaders;
-  url: string;
-}
