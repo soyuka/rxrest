@@ -4,7 +4,7 @@ export = RxRest
 import { Stream } from 'most'
 
 declare namespace RxRest {
-  function fetch(input: string | RequestWithHeaders, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
+  function fetch(input: string | Request, init?: RequestOptions, abortCallback?: (req: Request) => void): Stream<any>;
 
   class RxRest {
     constructor (config: RxRestConfiguration);
@@ -109,18 +109,6 @@ declare namespace RxRest {
     redirect?: string;
     referrer?: string;
     integrity?: string;
-  }
-
-  /**
-   * @TODO, should be Headers but it doesn't use Symbol.Iterable?
-   */
-  interface FixedHeaders extends Map<string, string> {
-    append: (name: string, value: string) => void;
-    getAll: () => Object[];
-  }
-
-  interface RequestWithHeaders extends Request {
-    headers: FixedHeaders;
   }
 
   class RxRestConfiguration {
