@@ -1,15 +1,15 @@
-import { RxRestConfiguration } from './RxRestConfiguration';
+import { RxRestConfiguration } from './RxRestConfiguration'
 import {
   RequestInterceptor,
   ResponseInterceptor,
   ErrorInterceptor,
   ErrorResponse,
   BodyParam
-} from './interfaces';
+} from './interfaces'
 import { RxRestCollection, RxRestItem } from './index'
 import { Stream, throwError, of } from 'most'
 import { create } from '@most/create'
-import { objectToMap } from './utils';
+import { objectToMap } from './utils'
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -22,7 +22,7 @@ const fromPromise = function(promise: Promise<any>) {
   })
 }
 
-export class RxRest<T> {
+export class RxRest<F, T> {
   protected $route: string[]
   $fromServer: boolean = false
   $asIterable: boolean = false
@@ -125,7 +125,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -140,7 +140,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -155,7 +155,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -171,7 +171,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -187,7 +187,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -202,7 +202,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -217,7 +217,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -232,7 +232,7 @@ export class RxRest<T> {
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -270,7 +270,7 @@ export class RxRest<T> {
    * @param {Object|URLSearchParams}
    * @return this
    */
-  setQueryParams(params: any): RxRest<T> {
+  setQueryParams(params: any): this {
     this.queryParams = params
     return this
   }
@@ -280,7 +280,7 @@ export class RxRest<T> {
    * @param {Object|URLSearchParams}
    * @return this
    */
-  setHeaders(params: any): RxRest<T> {
+  setHeaders(params: any): this {
     this.headers = params
     return this
   }
@@ -405,7 +405,7 @@ export class RxRest<T> {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam<T>): Stream<RxRestItem<T> & T> {
+  request(method: string, body?: BodyParam<T>): Stream<F> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -414,7 +414,7 @@ export class RxRest<T> {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    let stream = <Stream<RxRestItem<T> & T>> of(request)
+    let stream = <Stream<F>> of(request)
     .flatMap(this.expandInterceptors(this.config.requestInterceptors))
     .flatMap(request => this.config.fetch(request, null, this.config.abortCallback))
     .flatMap(this.expandInterceptors(this.config.responseInterceptors))
@@ -427,7 +427,7 @@ export class RxRest<T> {
           item.element = body as T
           item.$metadata = metadata
         } else {
-          item = new RxRestItem(this.$route, body as T, this.config, metadata)
+          item = new RxRestItem<T>(this.$route, body, this.config, metadata)
         }
 
         item.$fromServer = true
@@ -439,7 +439,7 @@ export class RxRest<T> {
       }
 
       let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
-        let item = new RxRestItem(this.$route, e, this.config, metadata)
+        let item = new RxRestItem<T>(this.$route, e, this.config, metadata)
         item.$fromServer = true
         return item
       }), this.config, metadata)
