@@ -3,7 +3,7 @@ import { RxRestProxyHandler } from './RxRestProxyHandler'
 import { RxRest as AbstractRxRest } from './RxRest'
 import { RxRestConfiguration } from './RxRestConfiguration';
 
-export class RxRestItem<T> extends AbstractRxRest<T> {
+export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T>, T> {
   $element: T = {} as T;
 
   /**
@@ -20,7 +20,7 @@ export class RxRestItem<T> extends AbstractRxRest<T> {
       this.element = element
     }
 
-    const proxy = new Proxy(this.$element, new RxRestProxyHandler<T>(this))
+    const proxy = new Proxy(this.$element, new RxRestProxyHandler<RxRestItem<T>, T>(this))
 
     return <RxRestItem<T> & T> proxy
   }
@@ -98,8 +98,8 @@ export class RxRestItem<T> extends AbstractRxRest<T> {
   }
 }
 
-export class RxRestCollection<T> extends AbstractRxRest<T>
-  implements Iterable<RxRestItem<T>>, RxRestCollection<T> {
+export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T>, T>
+  implements Iterable<RxRestItem<T>> {
   length: number;
   $elements: RxRestItem<T>[] = [];
   [index: number]: RxRestItem<T>;
@@ -128,9 +128,9 @@ export class RxRestCollection<T> extends AbstractRxRest<T>
 
     this.$asIterable = asIterable
 
-    const proxy = new Proxy(this.$elements, new RxRestProxyHandler<T>(this))
+    const proxy = new Proxy(this.$elements, new RxRestProxyHandler<RxRestCollection<T>, T>(this))
 
-    return <RxRestCollection<T> & T> proxy
+    return <RxRestCollection<T> & T[]> proxy
   }
 
   [Symbol.iterator]() {

@@ -1,11 +1,11 @@
 import {RxRestCollection, RxRestItem} from './index'
 import {RxRest} from './RxRest'
 
-export class RxRestProxyHandler<T> implements ProxyHandler<RxRest<T>> {
+export class RxRestProxyHandler<F, T> implements ProxyHandler<RxRest<F, T>> {
   private $internal: PropertyKey[] = [];
-  private $instance: RxRestItem<T> | RxRestCollection<T>;
+  private $instance: F;
 
-  constructor(target: RxRestItem<T> | RxRestCollection<T>) {
+  constructor(target: F) {
     this.$instance = target
     do {
       this.$internal = this.$internal.concat(
