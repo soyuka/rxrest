@@ -3,7 +3,7 @@ import { RxRestProxyHandler } from './RxRestProxyHandler'
 import { RxRest as AbstractRxRest } from './RxRest'
 import { RxRestConfiguration } from './RxRestConfiguration';
 
-export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T>, T> {
+export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T> & T, T> {
   $element: T = {} as T;
 
   /**
@@ -98,7 +98,7 @@ export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T>, T> {
   }
 }
 
-export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T>, T>
+export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T> & T[] & T, T>
   implements Iterable<RxRestItem<T>> {
   length: number;
   $elements: RxRestItem<T>[] = [];
@@ -210,17 +210,17 @@ export class RxRest {
   constructor(private config: RxRestConfiguration) {
   }
 
-  one<T>(route: string, id?: any): RxRestItem<T> & T {
+  one<T>(route: string, id?: any): RxRestItem<T> {
     let r = new AbstractRxRest(this.config)
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> & T {
+  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> {
     let r = new AbstractRxRest(this.config)
     return r.all.call(r, route, asIterable)
   }
 
-  fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T) {
+  fromObject<T>(route: string, element: T|T[]): RxRestItem<T> | RxRestCollection<T> {
     let r = new AbstractRxRest(this.config)
     return r.fromObject.call(r, route, element)
   }

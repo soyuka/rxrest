@@ -415,7 +415,7 @@ Do a `POST` or a `PUT` request according to whether the resource came from the s
 
 ## Typings
 
-Interfaces inheritance:
+Interfaces:
 
 ```typescript
 import { RxRest, RxRestItem, RxRestConfig } from 'rxrest';
@@ -423,7 +423,7 @@ import { RxRest, RxRestItem, RxRestConfig } from 'rxrest';
 const config = new RxRestConfig()
 config.baseURL = 'http://localhost'
 
-interface Car extends RxRestItem<Car> {
+interface Car {
   id: number;
   name: string;
   model: string;
@@ -444,7 +444,7 @@ rxrest.one<Car>('/cars', 1)
 If you work with [Hypermedia-Driven Web APIs (Hydra)](http://www.markus-lanthaler.com/hydra/), you can extend a default typing for you items to avoid repetitions:
 
 ```typescript
-interface HydraItem<T> extends RxRestItem<T> {
+interface HydraItem<T> {
   '@id': string;
   '@context': string;
   '@type': string;
@@ -460,6 +460,8 @@ interface Model extends HydraItem<Model> {
   name: string;
 }
 ```
+
+To know more about typings and rxrest, please check out [the typings example]().
 
 <sup>[^ Back to menu](#menu)</sup>
 

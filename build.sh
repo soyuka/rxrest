@@ -7,4 +7,4 @@ rmdir build
 $rollup -c rollup.config.js
 $rollup -c rollup.config.js --full
 $rollup -c rollup.config.js --prod
-cp typings/rxrest.d.ts build/rxrest.d.ts
+# cp typings/rxrest.d.ts build/rxrest.d.ts
