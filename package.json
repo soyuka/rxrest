@@ -25,6 +25,7 @@
     "body-parser": "^1.17.1",
     "chai": "^4.1.0",
     "chai-spies": "^0.7.1",
+    "dts-bundle": "^0.7.3",
     "encoding": "^0.1.12",
     "express": "^4.14.0",
     "form-data": "^2.2.0",
@@ -46,5 +47,8 @@
     "@most/create": "^2.0.1",
     "most": "^1.5.0",
     "superagent": "^3.5.2"
+  },
+  "typescript": {
+    "definition": "build/rxrest.d.ts"
   }
 }

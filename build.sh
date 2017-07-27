@@ -7,4 +7,6 @@ rmdir build
 $rollup -c rollup.config.js
 $rollup -c rollup.config.js --full
 $rollup -c rollup.config.js --prod
-# cp typings/rxrest.d.ts build/rxrest.d.ts
+cp src/interfaces.d.ts lib/
+./node_modules/dts-bundle/lib/dts-bundle.js --name rxrest --main lib/index.d.ts --outputAsModuleFolder
+cp lib/rxrest.d.ts build/
