@@ -11,9 +11,9 @@ declare namespace RxRest {
 
   class RxRest {
     constructor (config: RxRestConfiguration);
-    one<T>(route: string, id?: any): RxRestItem<T>;
-    all<T>(route: string, asIterable?: boolean): RxRestCollection<T>;
-    fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T>;
+    one<T>(route: string, id?: any): RxRestItem<T> & T;
+    all<T>(route: string, asIterable?: boolean): RxRestCollection<T> & T[];
+    fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T)|(RxRestCollection<T> & T[]);
   }
 
   class AbstractRxRest<F, T> {
@@ -73,7 +73,7 @@ declare namespace RxRest {
     save<T>(
       queryParams?: Object|URLSearchParams,
       headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
-    clone<T>(): RxRestItem<T>;
+    clone<T>(): RxRestItem<T> & T;
     plain(): T;
   }
 
@@ -86,7 +86,7 @@ declare namespace RxRest {
     getList<T>(
       queryParams?: Object|URLSearchParams,
       headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
-    clone<T>(): RxRestCollection<T>;
+    clone<T>(): RxRestCollection<T> & T[];
     plain(): T[];
   }
 

@@ -85,7 +85,7 @@ export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T> & T, T> {
    * Clone
    * @return {RxRestItem<T>}
    */
-  clone(): RxRestItem<T> {
+  clone(): RxRestItem<T> & T {
     let route = this.$route
 
     if (this.$element[this.config.identifier]) {
@@ -94,7 +94,7 @@ export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T> & T, T> {
 
     let clone = new RxRestItem(route, this.$element, this.config)
     clone.$fromServer = this.$fromServer
-    return clone
+    return clone as RxRestItem<T> & T
   }
 }
 
@@ -201,8 +201,8 @@ export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T> & T[
    *
    * @returns {RxRestCollection}
    */
-  clone(): RxRestCollection<T> {
-    return new RxRestCollection<T>(this.$route, this.$elements, this.config)
+  clone(): RxRestCollection<T> & T[] {
+    return new RxRestCollection<T>(this.$route, this.$elements, this.config) as RxRestCollection<T> & T[]
   }
 }
 
@@ -210,17 +210,17 @@ export class RxRest {
   constructor(private config: RxRestConfiguration) {
   }
 
-  one<T>(route: string, id?: any): RxRestItem<T> {
+  one<T>(route: string, id?: any): RxRestItem<T> & T {
     let r = new AbstractRxRest(this.config)
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> {
+  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> & T[] {
     let r = new AbstractRxRest(this.config)
     return r.all.call(r, route, asIterable)
   }
 
-  fromObject<T>(route: string, element: T|T[]): RxRestItem<T> | RxRestCollection<T> {
+  fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T[]) {
     let r = new AbstractRxRest(this.config)
     return r.fromObject.call(r, route, element)
   }

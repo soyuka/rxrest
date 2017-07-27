@@ -48,3 +48,15 @@ let e = (rxrest.fromObject<Foo>('foos', [foo]) as RxRestCollection<Foo>)
 .observe((e: Foo) => {})
 .then((e: Foo) => {})
 
+
+let f  = rxrest.one<Foo>('foos', 1)
+// f is Foo
+console.log(f.id)
+// f is RxRestItem<foo>
+console.log(f.$fromServer)
+
+// clone is Foo & RxRestItem<Foo>
+let fclone = f.clone()
+console.log(fclone.$fromServer)
+console.log(fclone.id)
+
