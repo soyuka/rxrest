@@ -112,7 +112,7 @@ export class RxRest<F, T> {
    * @param {BodyParam} body
    * @return {BodyParam|RxRestItem}
    */
-  protected withBody(body: BodyParam<any>) {
+  protected withBody(body: BodyParam<T>) {
     return body ? body : this
   }
 
@@ -124,7 +124,7 @@ export class RxRest<F, T> {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  post(body?: BodyParam<any>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+  post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
@@ -170,7 +170,7 @@ export class RxRest<F, T> {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  put(body?: BodyParam<any>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+  put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
@@ -186,7 +186,7 @@ export class RxRest<F, T> {
    * @param {Object|Headers} [headers]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  patch(body?: BodyParam<any>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
+  patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
     Stream<F> {
     this.queryParams = queryParams
     this.headers = headers
@@ -405,7 +405,7 @@ export class RxRest<F, T> {
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
    * @returns {Stream<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam<any>): Stream<F> {
+  request(method: string, body?: BodyParam<T>): Stream<F> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
