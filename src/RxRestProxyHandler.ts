@@ -1,4 +1,3 @@
-import {RxRestCollection, RxRestItem} from './index'
 import {RxRest} from './RxRest'
 
 export class RxRestProxyHandler<F, T> implements ProxyHandler<RxRest<F, T>> {
