@@ -1,6 +1,6 @@
 {
   "name": "rxrest",
-  "version": "4.0.11",
+  "version": "4.0.12",
   "description": "RxRest a reactive REST utility",
   "main": "build/rxrest.js",
   "typings": "build/rxrest.d.ts",
