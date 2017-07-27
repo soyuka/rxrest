@@ -461,7 +461,7 @@ interface Model extends HydraItem<Model> {
 }
 ```
 
-To know more about typings and rxrest, please check out [the typings example]().
+To know more about typings and rxrest, please check out [the typings example](https://github.com/soyuka/rxrest/blob/master/test/typings.ts).
 
 <sup>[^ Back to menu](#menu)</sup>
 
