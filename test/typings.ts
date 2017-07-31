@@ -9,6 +9,11 @@ interface Foo {
   id: number
 }
 
+interface Bar extends RxRestItem<Bar> {
+  id: number
+  foo: string
+}
+
 const foo: Foo = {id: 1}
 
 // Retrieve a collection, when the second argument is "true", the stream is Stream<Foo[]>
@@ -59,4 +64,9 @@ console.log(f.$fromServer)
 let fclone = f.clone()
 console.log(fclone.$fromServer)
 console.log(fclone.id)
+
+// Bar extends rxrestitem
+let x: Bar = {id: 1, foo: ''} as Bar
+let z = rxrest.fromObject<Bar>('bars', x) as Bar
+console.log(z.clone().plain())
 
