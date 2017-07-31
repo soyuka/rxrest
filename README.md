@@ -514,7 +514,7 @@ export class FooComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cars = this.rxrest.all<Car>('cars', true).get()
+    this.cars = Observable.from(this.rxrest.all<Car>('cars', true).get())
   }
 }
 ```
