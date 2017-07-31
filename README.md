@@ -514,10 +514,12 @@ export class FooComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cars = this.rxrest.all<Car>('cars').get()
+    this.cars = this.rxrest.all<Car>('cars', true).get()
   }
 }
 ```
+
+[Full example featuring jwt authentication, errors handling, body parsers for JSON-LD](https://gist.github.com/soyuka/c2e89ebf3c7a33f8d059c567aefd471c)
 
 <sup>[^ Back to menu](#menu)</sup>
 
