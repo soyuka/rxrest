@@ -61,6 +61,7 @@ declare namespace RxRest {
     request(method: string, body?: BodyParam<T>): Stream<F>;
     $route: string[];
     $fromServer: boolean;
+    $pristine: boolean;
     $queryParams: URLSearchParams;
     $headers: Headers;
     $metadata: any;

@@ -7,13 +7,13 @@ npm run build
 npm run bundle
 npm test
 newver=$(npm --no-git-tag-version version $1)
-git add -f build package.json
+git add -f build package.json package-lock.json
 git commit -m $newver
 git tag $newver
 npm publish
 git reset --hard HEAD~1
 newver=$(npm --no-git-tag-version version $1)
-git add package.json
+git add package.json package-lock.json
 git commit -m $newver
 git push --tags
 git push
