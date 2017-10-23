@@ -76,6 +76,15 @@ describe('RxRest', function() {
       }, 100)
     })
 
+    app.post('/resource', function(req, res) {
+      res.status(201).json({id: 1})
+    })
+
+    // force id from above
+    app.put('/resource/1', function(req, res) {
+      res.status(200).json({id: 1})
+    })
+
     app.listen(3333, cb)
   })
 
@@ -615,6 +624,29 @@ describe('RxRest', function() {
     })
   })
 
+  // replicates a bug where second put was /resource/id/id
+  it('should update', function(done) {
+    const resource = rxrest.one('resource')
+
+    // POST
+    resource.save()
+    .observe(() => {
+      expect(resource.$route).to.deep.equal(['resource', '1'])
+      // PUT
+      resource.save()
+      .observe(() => {
+        expect(resource.$route).to.deep.equal(['resource', '1'])
+        // PUT
+        resource.save()
+        .observe(() => {
+          expect(resource.$route).to.deep.equal(['resource', '1'])
+          done()
+        })
+      })
+    })
+
+  })
+
   it('should check $pristine', function() {
     return rxrest.one('test', 3)
     .get()
@@ -628,5 +660,4 @@ describe('RxRest', function() {
       expect(item.$fromServer).to.be.true
     })
   })
-
 })
