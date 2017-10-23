@@ -202,7 +202,9 @@ export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T> & T[
    * @returns {RxRestCollection}
    */
   clone(): RxRestCollection<T> & T[] {
-    return new RxRestCollection<T>(this.$route, this.$elements, this.config) as RxRestCollection<T> & T[]
+    return new RxRestCollection<T>(
+      this.$route, this.$elements, this.config
+    ) as RxRestCollection<T> & T[]
   }
 }
 
