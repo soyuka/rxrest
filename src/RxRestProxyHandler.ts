@@ -37,6 +37,10 @@ export class RxRestProxyHandler<F, T> implements ProxyHandler<RxRest<F, T>> {
       return true
     }
 
+    if ((this.$instance as any).$pristine === true) {
+      (this.$instance as any).$pristine = false
+    }
+
     target[p] = value
     return true
   }

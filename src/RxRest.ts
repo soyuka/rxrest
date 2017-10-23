@@ -30,6 +30,7 @@ export class RxRest<F, T> {
   $headers: Headers = new Headers()
   config: RxRestConfiguration
   $metadata: any
+  $pristine: boolean = true
 
   /**
    * constructor
@@ -431,6 +432,7 @@ export class RxRest<F, T> {
         }
 
         item.$fromServer = true
+        item.$pristine = true
 
         return create((add, end, error) => {
           add(item)
@@ -441,8 +443,11 @@ export class RxRest<F, T> {
       let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
         let item = new RxRestItem<T>(this.$route, e, this.config, metadata)
         item.$fromServer = true
+        item.$pristine = true
         return item
       }), this.config, metadata)
+
+      collection.$pristine = true
 
       return create((add, end, error) => {
         if (this.$asIterable) {

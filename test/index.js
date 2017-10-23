@@ -614,4 +614,19 @@ describe('RxRest', function() {
       expect(clone.plain()).to.deep.equal([{foo: 'bar', id: 3}])
     })
   })
+
+  it('should check $pristine', function() {
+    return rxrest.one('test', 3)
+    .get()
+    .observe((item) => {
+      expect(item).to.be.an.instanceof(RxRestItem)
+      expect(item.$pristine).to.be.true
+
+      item.foo = 'bar'
+
+      expect(item.$pristine).to.be.false
+      expect(item.$fromServer).to.be.true
+    })
+  })
+
 })
