@@ -29,6 +29,7 @@ export class RxRestConfiguration {
   public errorInterceptors: ErrorInterceptor[] = []
   public fetch: any
   public abortCallback: (req: Request) => void = () => null
+  public uuid: boolean = false
 
   constructor() {
       this.fetch = fetch
@@ -154,5 +155,4 @@ export class RxRestConfiguration {
   get headers(): any {
     return this.$headers
   }
-
 }

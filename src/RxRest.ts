@@ -9,7 +9,7 @@ import {
 import { RxRestCollection, RxRestItem } from './index'
 import { Stream, throwError, of } from 'most'
 import { create } from '@most/create'
-import { objectToMap } from './utils'
+import { objectToMap, uuid } from './utils'
 
 const fromPromise = function(promise: Promise<any>) {
   return create((add, end, error) => {
@@ -31,6 +31,7 @@ export class RxRest<F, T> {
   config: RxRestConfiguration
   $metadata: any
   $pristine: boolean = true
+  $uuid?: string;
 
   /**
    * constructor
@@ -45,6 +46,9 @@ export class RxRest<F, T> {
     this.$route = route === undefined ? [] : [...route]
     this.config = config
     this.$metadata = metadata
+    if (config.uuid) {
+      this.$uuid = uuid()
+    }
   }
 
   protected addRoute(route: string): void {

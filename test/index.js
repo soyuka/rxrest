@@ -660,4 +660,24 @@ describe('RxRest', function() {
       expect(item.$fromServer).to.be.true
     })
   })
+
+  it('should add uuids', function(done) {
+    const config = new RxRestConfiguration()
+    config.baseURL = 'http://localhost:3333'
+    config.identifier = 'id'
+    config.uuid = true
+    rxrest = new RxRest(config)
+
+    rxrest.all('test')
+    .get()
+    .observe(e => {})
+    .then((data) => {
+      expect(data[0].$uuid).to.be.a.string
+      expect(data[0].$uuid).not.to.be.undefined
+      data.unshift(rxrest.fromObject('test', {}))
+      expect(data[0].$uuid).to.be.a.string
+      expect(data[0].$uuid).not.to.be.undefined
+      done()
+    })
+  })
 })
