@@ -62,6 +62,7 @@ declare namespace RxRest {
     $route: string[];
     $fromServer: boolean;
     $pristine: boolean;
+    $uuid: string;
     $queryParams: URLSearchParams;
     $headers: Headers;
     $metadata: any;
@@ -131,18 +132,19 @@ declare namespace RxRest {
   }
 
   class RxRestConfiguration {
-      constructor();
-      baseURL: string;
-      identifier: string;
-      requestInterceptors: RequestInterceptor[];
-      responseInterceptors: ResponseInterceptor[];
-      errorInterceptors: ErrorInterceptor[];
-      headers: Headers;
-      queryParams: URLSearchParams;
-      fetch: any;
-      abortCallback: (req: Request) => void;
-      requestBodyHandler(body: FormData | URLSearchParams | Body | Blob | undefined):
-        FormData | URLSearchParams | Body | Blob | undefined | string | Promise<any>;
-      responseBodyHandler(body: Response): Promise<any>;
+    constructor();
+    baseURL: string;
+    identifier: string;
+    uuid: boolean;
+    requestInterceptors: RequestInterceptor[];
+    responseInterceptors: ResponseInterceptor[];
+    errorInterceptors: ErrorInterceptor[];
+    headers: Headers;
+    queryParams: URLSearchParams;
+    fetch: any;
+    abortCallback: (req: Request) => void;
+    requestBodyHandler(body: FormData | URLSearchParams | Body | Blob | undefined):
+      FormData | URLSearchParams | Body | Blob | undefined | string | Promise<any>;
+    responseBodyHandler(body: Response): Promise<any>;
   }
 }
