@@ -1,13 +1,13 @@
 export as namespace RxRest
 export = RxRest
 
-import { Stream } from 'most'
+import { Observable } from 'rxjs/Observable'
 
 declare namespace RxRest {
   function fetch(input: string | Request,
                  init?: RequestOptions,
                  abortCallback?: (req: Request) => void
-                ): Stream<any>;
+                ): Observable<any>;
 
   class RxRest {
     constructor (config: RxRestConfiguration);
@@ -27,20 +27,20 @@ declare namespace RxRest {
     post(
       body?: BodyParam<T>,
       queryParams?: Object|URLSearchParams,
-      headers?: Object|Headers): Stream<F>;
+      headers?: Object|Headers): Observable<F>;
     put(
       body?: BodyParam<T>,
       queryParams?: Object|URLSearchParams,
-      headers?: Object|Headers): Stream<F>;
+      headers?: Object|Headers): Observable<F>;
     patch(
       body?: BodyParam<T>,
       queryParams?: Object|URLSearchParams,
-      headers?: Object|Headers): Stream<F>;
-    remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<F>;
-    get(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<F>;
-    head(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<F>;
-    trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<F>;
-    options(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Stream<F>;
+      headers?: Object|Headers): Observable<F>;
+    remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<F>;
+    get(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<F>;
+    head(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<F>;
+    trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<F>;
+    options(queryParams?: Object|URLSearchParams, headers?: Object|Headers): Observable<F>;
     URL: string;
     baseURL: string;
     identifier: string;
@@ -58,7 +58,7 @@ declare namespace RxRest {
     fetch: any
     requestBodyHandler: RequestBodyHandler<T>;
     responseBodyHandler: ResponseBodyHandler;
-    request(method: string, body?: BodyParam<T>): Stream<F>;
+    request(method: string, body?: BodyParam<T>): Observable<F>;
     $route: string[];
     $fromServer: boolean;
     $pristine: boolean;
@@ -74,7 +74,7 @@ declare namespace RxRest {
     $element: T;
     save<T>(
       queryParams?: Object|URLSearchParams,
-      headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
+      headers?: Object|Headers): Observable<RxRestItem<T>|RxRestCollection<T>>;
     clone<T>(): RxRestItem<T> & T;
     plain(): T;
   }
@@ -87,21 +87,21 @@ declare namespace RxRest {
     $elements: RxRestItem<T>[];
     getList<T>(
       queryParams?: Object|URLSearchParams,
-      headers?: Object|Headers): Stream<RxRestItem<T>|RxRestCollection<T>>;
+      headers?: Object|Headers): Observable<RxRestItem<T>|RxRestCollection<T>>;
     clone<T>(): RxRestCollection<T> & T[];
     plain(): T[];
   }
 
   interface RequestInterceptor {
-    (request: Request): Stream<Request>|Promise<Request>|undefined|Request|void;
+    (request: Request): Observable<Request>|Promise<Request>|undefined|Request|void;
   }
 
   interface ResponseInterceptor {
-    (body: Body): Stream<Body|Object|undefined>|Promise<Body|Object|undefined>|undefined|Body|void;
+    (body: Body): Observable<Body|Object|undefined>|Promise<Body|Object|undefined>|undefined|Body|void;
   }
 
   interface ErrorInterceptor {
-    (response: Response): Stream<Response>|void|Response|Promise<Response>;
+    (response: Response): Observable<Response>|void|Response|Promise<Response>;
   }
 
   type BodyParam<T> = RxRestItem<T>|FormData|URLSearchParams|Body|Blob|undefined|Object;

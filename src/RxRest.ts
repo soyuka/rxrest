@@ -1,3 +1,4 @@
+import './rxjs'
 import { RxRestConfiguration } from './RxRestConfiguration'
 import {
   RequestInterceptor,
@@ -7,25 +8,26 @@ import {
   BodyParam
 } from './interfaces'
 import { RxRestCollection, RxRestItem } from './index'
-import { Stream, throwError, of } from 'most'
-import { create } from '@most/create'
+import { Observable } from 'rxjs/Observable'
+import { Observer } from 'rxjs/Observer'
+
 import { objectToMap, uuid } from './utils'
 
 const fromPromise = function(promise: Promise<any>) {
-  return create((add, end, error) => {
+  return Observable.create((observer: Observer<any>) => {
     promise
     .then((v) => {
-      add(v)
-      end()
+      observer.next(v)
+      observer.complete()
     })
-    .catch(error)
+    .catch(observer.error)
   })
 }
 
 export class RxRest<F, T> {
   protected $route: string[]
   $fromServer: boolean = false
-  $asIterable: boolean = false
+  $asIterable: boolean = true
   $queryParams: URLSearchParams = new URLSearchParams()
   $headers: Headers = new Headers()
   config: RxRestConfiguration
@@ -76,23 +78,23 @@ export class RxRest<F, T> {
    * all
    *
    * @param {String} route
-   * @param {boolean} asIterable - forces the next request to return an Observable<Array>
+   * @param {boolean} [asIterable=true] - forces the next request to return an Observable<Array>
    *                               instead of emitting multiple events
    * @returns {RxRestCollection}
    */
-  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> {
+  all<T>(route: string, asIterable: boolean = true): RxRestCollection<T> {
     this.addRoute(route)
     return new RxRestCollection<T>(this.$route, undefined, this.config, null, asIterable)
   }
 
   /**
-   * asIterable - forces the next request to return an Observable<Array>
+   * asIterable - sets the flag $asIterable
    * instead of emitting multiple events
    *
    * @returns {self}
    */
-  asIterable(): this {
-    this.$asIterable = true
+  asIterable(value = true): this {
+    this.$asIterable = value
     return this
   }
 
@@ -127,10 +129,10 @@ export class RxRest<F, T> {
    * @param {Body|Blob|FormData|URLSearchParams|Object|RxRestItem} [body]
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   post(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -142,10 +144,10 @@ export class RxRest<F, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   remove(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -157,10 +159,10 @@ export class RxRest<F, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   get(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -173,10 +175,10 @@ export class RxRest<F, T> {
    * @param {Body|Blob|FormData|URLSearchParams|Object|RxRestItem} [body]
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   put(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -189,10 +191,10 @@ export class RxRest<F, T> {
    * @param {Body|Blob|FormData|URLSearchParams|Object|RxRestItem} [body]
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   patch(body?: BodyParam<T>, queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -204,10 +206,10 @@ export class RxRest<F, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   head(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -219,10 +221,10 @@ export class RxRest<F, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   trace(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -234,10 +236,10 @@ export class RxRest<F, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   options(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<F> {
+    Observable<F> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -374,31 +376,31 @@ export class RxRest<F, T> {
    * expandInterceptors
    *
    * @param {RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]} interceptors
-   * @returns {Stream<any>} fn
+   * @returns {Observable<any>} fn
    */
   private expandInterceptors(
     interceptors: RequestInterceptor[]|ResponseInterceptor[]|ErrorInterceptor[]
   ) {
-    return function(origin: any): Stream<any> {
+    return function(origin: any): Observable<any> {
       return (<any>interceptors).reduce(
-        (obs: Stream<any>, interceptor: any) =>
+        (obs: Observable<any>, interceptor: any) =>
           obs.concatMap(value => {
             let result = interceptor(value)
             if (result === undefined) {
-              return of(value)
+              return Observable.of(value)
             }
 
             if (result instanceof Promise) {
               return fromPromise(result)
             }
 
-            if (result instanceof Stream) {
+            if (result instanceof Observable) {
               return result
             }
 
-            return of(result)
+            return Observable.of(result)
           }),
-        of(origin)
+        Observable.of(origin)
       )
     }
   }
@@ -408,9 +410,9 @@ export class RxRest<F, T> {
    *
    * @param {string} method
    * @param {RxRestItem|FormData|URLSearchParams|Body|Blob|undefined|Object} [body]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
-  request(method: string, body?: BodyParam<T>): Stream<F> {
+  request(method: string, body?: BodyParam<T>): Observable<F> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
@@ -419,12 +421,12 @@ export class RxRest<F, T> {
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions);
 
-    let stream = <Stream<F>> of(request)
-    .flatMap(this.expandInterceptors(this.config.requestInterceptors))
-    .flatMap(request => this.config.fetch(request, null, this.config.abortCallback))
-    .flatMap(this.expandInterceptors(this.config.responseInterceptors))
-    .flatMap(body => fromPromise(this.config.responseBodyHandler(body)))
-    .flatMap(({body, metadata}) => {
+    let stream = <Observable<F>> Observable.of(request)
+    .mergeMap(this.expandInterceptors(this.config.requestInterceptors))
+    .mergeMap(request => this.config.fetch(request, null, this.config.abortCallback))
+    .mergeMap(this.expandInterceptors(this.config.responseInterceptors))
+    .mergeMap(body => fromPromise(this.config.responseBodyHandler(body)))
+    .mergeMap(({body, metadata}) => {
       if (!Array.isArray(body)) {
         let item: RxRestItem<T>
         if (this instanceof RxRestItem) {
@@ -438,9 +440,9 @@ export class RxRest<F, T> {
         item.$fromServer = true
         item.$pristine = true
 
-        return create((add, end, error) => {
-          add(item)
-          end(item)
+        return Observable.create((observer: Observer<RxRestItem<T>>) => {
+          observer.next(item)
+          observer.complete()
         })
       }
 
@@ -453,22 +455,24 @@ export class RxRest<F, T> {
 
       collection.$pristine = true
 
-      return create((add, end, error) => {
+      return Observable.create((observer: Observer<RxRestItem<T>|RxRestCollection<T>>) => {
         if (this.$asIterable) {
-          add(collection)
+          observer.next(collection)
         } else {
           for (let item of collection) {
-            add(item)
+            observer.next(item)
           }
         }
 
-        end(collection)
+        observer.complete()
       })
     })
-    .recoverWith(body => {
-      return of(body)
-      .flatMap(this.expandInterceptors(this.config.errorInterceptors))
-      .flatMap((body: ErrorResponse) => throwError(body))
+    .catch((body) => {
+      return Observable.of(body)
+      .mergeMap(this.expandInterceptors(this.config.errorInterceptors))
+      .mergeMap((body: ErrorResponse) => {
+        return Observable.throw(body)
+      })
     })
 
     return stream

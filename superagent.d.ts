@@ -1,3 +1,4 @@
+declare let _default: {}
 declare module 'superagent' {
-  export default {};
+  export default _default;
 }

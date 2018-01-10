@@ -22,22 +22,19 @@ config.baseURL = 'http://localhost/api'
 const rxrest = new RxRest(config)
 rxrest.all('cars')
 .get()
-.observe(result => {
-  console.log(result) // RxRestItem
-})
-.then(collection => {
+.subscribe((cars: Car[]) => {
   /**
-   * `collection` is:
+   * `cars` is:
    * RxRestCollection [
    *   RxRestItem { name: 'Polo', id: 1, brand: 'Audi' },
    *   RxRestItem { name: 'Golf', id: 2, brand: 'Volkswagen' }
    * ]
    */
 
-  collection[0].brand = 'Volkswagen'
+  cars[0].brand = 'Volkswagen'
 
-  collection[0].save()
-  .observe(result => {
+  cars[0].save()
+  .subscribe(result => {
     console.log(result)
     /**
      * outputs: RxRestItem { name: 'Polo', id: 1, brand: 'Volkswagen' }
@@ -51,7 +48,7 @@ rxrest.all('cars')
 -  [Technical concepts](#technical-concepts)
 -  [Promise compatibility](#promise-compatibility)
 -  [One-event Stream instead of multiple events](#one-event-stream-instead-of-multiple-events)
--  [Object state (`$fromServer`, `$pristine`)](#Objects status (`$fromServer`, `$pristine`))
+-  [Object state (`$fromServer`, `$pristine`, `$uuid`)](#Objects status (`$fromServer`, `$pristine`, `$uuid`))
 -  [Configuration](#configuration)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
@@ -66,19 +63,19 @@ This library uses a [`fetch`-like](https://developer.mozilla.org/en-US/docs/Web/
 Because it uses fetch, the RxRest library uses it's core concepts. It will add an `Object` compatibility layer to [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams) for query parameters and [Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers).
 It is also familiar with `Body`-like object, as `FormData`, `Response`, `Request` etc.
 
-This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `most.js` for the reactive part.
+This script depends on `superagent` (for a easier XMLHttpRequest usage, compatible in both node and the browser) and `rxjs` for the reactive part.
 
 <sup>[^ Back to menu](#menu)</sup>
 
 ## Promise compatibility
 
-Sometimes you don't need to subscribe/observe the response. Mostjs already leverage the feature:
+Just use the `toPromise` utility:
 
 ```javascript
 
 rxrest.one('foo')
 .get()
-.observe(() => {})
+.toPromise()
 .then(item => {
   console.log(item)
 })
@@ -87,38 +84,28 @@ rxrest.one('foo')
 <sup>[^ Back to menu](#menu)</sup>
 ## One-event Stream instead of multiple events
 
-Sometimes, you don't want RxRest to emit one event per item in the collection but only one event for the whole collection.
+Sometimes, you may want RxRest to emit one event per item in the collection:
 
-To do so, just call `asIterable`:
+To do so, just call `asIterable(false)`:
 
 ```javascript
-rxrest.all('foos')
-.asIterable()
+rxrest.all('cars')
+.asIterable(false)
 .get()
-// only one event with the collection
-.observe((e) => {})
+// next() is called with every car available
+.subscribe((e) => {})
 ```
 
 Or use the second argument of `.all` instead of `asIterable`:
 
 ```javascript
-rxrest.all('foos', true)
+rxrest.all('cars', false)
 .get()
-// only one event with the collection
-.observe((e) => {})
+// next() is called with every car available
+.subscribe((e) => {})
 ```
 
-This can be useful if you work with, say angular:
-
-```javascript
-this.data = Observable.from(rxrest.all('foos', true).get())
-```
-
-```html
-<div *ngFor="let d of data | async"></div>
-```
-
-## Object state (`$fromServer`, `$pristine`)
+## Object state (`$fromServer`, `$pristine`, `$uuid`)
 
 Thanks to the Proxy, we can get metadata informations about the current object and it's state.
 
@@ -126,7 +113,7 @@ When you instantiate an object, it's `$pristine`. When it gets modified it's dir
 
 ```javascript
 const rxrest = new RxRest()
-const car = rxrest.one('car', 1)
+const car = rxrest.one('cars', 1)
 
 assert(car.$prisine === true)
 
@@ -139,12 +126,12 @@ You can also check that the item comes from the server:
 
 ```javascript
 const rxrest = new RxRest()
-const car = rxrest.one('car', 1)
+const car = rxrest.one('cars', 1)
 
 assert(car.$fromServer === false) // we just instantiated it in the client
 
 car.save()
-.observe((car) => {
+.subscribe((car) => {
   assert(car.$fromServer === true) //now it's from the server
   assert(car.$prisine === true) //it's also pristine!
 })
@@ -168,8 +155,8 @@ It is the base url prepending your routes. For example :
 config.baseURL = 'http://localhost/api'
 
 const rxrest = new RxRest(config)
-//this will request GET http://localhost/api/car/1
-rxrest.one('car', 1)
+//this will request GET http://localhost/api/cars/1
+rxrest.one('cars', 1)
 .get()
 ```
 
@@ -181,7 +168,7 @@ This is the key storing your identifier in your api objects. It defaults to `id`
 config.identifier = '@id'
 
 const rxrest = new RxRest(config)
-rxrest.one('car', 1)
+rxrest.one('cars', 1)
 
 > RxRestItem { '@id': 1 }
 ```
@@ -220,6 +207,29 @@ rxrest.one('cars', 1).get()
 // Performs a GET request on /cars?bearer=barfoo
 rxrest.all('cars')
 .get({bearer: 'barfoo'})
+```
+
+#### `uuid`
+
+It tells RxRest to add an uuid to every resource. This is great if you need a unique identifier that's not related to the data of a collection (useful in forms):
+
+```javascript
+//set the url
+config.uuid = true
+
+const rxrest = new RxRest(config)
+rxrest.one('cars', 1)
+.get()
+.subscribe((car: Car) => {
+  console.log(car.$uuid)
+})
+```
+
+Also works in a non-`$fromServer` resource:
+
+```
+const car = rxrest.fromObject('cars')
+console.log(car.$uuid)
 ```
 
 <sup>[^ Back to menu](#menu)</sup>
@@ -356,7 +366,7 @@ Performs a `GET` request, for example:
 
 ```javascript
 rxrest.one('cars', 1).get({brand: 'Volkswagen'})
-.observe(e => console.log(e))
+.subscribe(e => console.log(e))
 
 GET /cars/1?brand=Volkswagen
 
@@ -370,7 +380,7 @@ Performs a `POST` request, for example:
 ```javascript
 const car = new Car({brand: 'Audi', name: 'A3'})
 rxrest.all('cars').post(car)
-.observe(e => console.log(e))
+.subscribe(e => console.log(e))
 
 > RxRestItem<Car> {id: 3, brand: 'Audi', name: 'A3'}
 ```
@@ -411,7 +421,7 @@ Output a `JSON` string of your RxRest element.
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.observe((e: RxRestItem<Car>) => console.log(e.json()))
+.subscribe((e: RxRestItem<Car>) => console.log(e.json()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -423,7 +433,7 @@ This gives you the original object (ie: not an instance of RxRestItem or RxRestC
 ```javascript
 rxrest.one('cars', 1)
 .get()
-.observe((e: RxRestItem<Car>) => console.log(e.plain()))
+.subscribe((e: RxRestItem<Car>) => console.log(e.plain()))
 
 > {id: 1, brand: 'Volkswagen', name: 'Polo'}
 ```
@@ -466,7 +476,7 @@ const rxrest = new RxRest(config)
 
 rxrest.one<Car>('/cars', 1)
 .get()
-.observe((item: Car) => {
+.subscribe((item: Car) => {
   console.log(item.model)
   item.model = 'audi'
 
@@ -547,7 +557,7 @@ export class FooComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cars = Observable.from(this.rxrest.all<Car>('cars', true).get())
+    this.cars = this.rxrest.all<Car>('cars', true).get()
   }
 }
 ```

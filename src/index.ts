@@ -1,4 +1,4 @@
-import { Stream } from 'most'
+import { Observable } from 'rxjs/Observable'
 import { RxRestProxyHandler } from './RxRestProxyHandler'
 import { RxRest as AbstractRxRest } from './RxRest'
 import { RxRestConfiguration } from './RxRestConfiguration';
@@ -30,10 +30,10 @@ export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T> & T, T> {
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   save(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Observable<RxRestItem<T>|RxRestCollection<T>> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -116,7 +116,7 @@ export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T> & T[
     elements?: T[]|RxRestItem<T>[],
     config?: RxRestConfiguration,
     metadata?: any,
-    asIterable: boolean = false
+    asIterable: boolean = true
   ) {
     super(config, route, metadata)
 
@@ -150,10 +150,10 @@ export class RxRestCollection<T> extends AbstractRxRest<RxRestCollection<T> & T[
    *
    * @param {Object|URLSearchParams} [queryParams]
    * @param {Object|Headers} [headers]
-   * @returns {Stream<RxRestItem|RxRestCollection>}
+   * @returns {Observable<RxRestItem|RxRestCollection>}
    */
   getList(queryParams?: Object|URLSearchParams, headers?: Object|Headers):
-    Stream<RxRestItem<T>|RxRestCollection<T>> {
+    Observable<RxRestItem<T>|RxRestCollection<T>> {
     this.queryParams = queryParams
     this.headers = headers
 
@@ -217,7 +217,7 @@ export class RxRest {
     return r.one.call(r, route, id)
   }
 
-  all<T>(route: string, asIterable: boolean = false): RxRestCollection<T> & T[] {
+  all<T>(route: string, asIterable: boolean = true): RxRestCollection<T> & T[] {
     let r = new AbstractRxRest(this.config)
     return r.all.call(r, route, asIterable)
   }
