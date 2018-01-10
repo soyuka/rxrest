@@ -7,7 +7,7 @@ import babel from 'rollup-plugin-babel'
 const plugins = [
   ts(),
   babel({exclude: 'node_modules/**'})
-];
+]
 
 const prod = process.env.NODE_ENV === 'production' || ~process.argv.indexOf('--prod')
 const full = prod || ~process.argv.indexOf('--full')
@@ -31,10 +31,12 @@ if (full) {
 }
 
 export default {
-  entry: 'src/index.ts',
-  format: 'cjs',
-  moduleName: 'rxrest',
-  plugins: plugins,
-  dest: `build/rxrest${full ? '.bundle' : ''}${prod ? '.min' : ''}.js`,
-  sourceMap: true
+  input: 'src/index.ts',
+  output: {
+    name: 'rxrest',
+    sourcemap: true,
+    format: 'cjs',
+    file: `build/rxrest${full ? '.bundle' : ''}${prod ? '.min' : ''}.js`
+  },
+  plugins: plugins
 }
