@@ -51,6 +51,7 @@ rxrest.all('cars')
 -  [Technical concepts](#technical-concepts)
 -  [Promise compatibility](#promise-compatibility)
 -  [One-event Stream instead of multiple events](#one-event-stream-instead-of-multiple-events)
+-  [Object state (`$fromServer`, `$pristine`)](#Objects status (`$fromServer`, `$pristine`))
 -  [Configuration](#configuration)
 -  [Interceptors](#interceptors)
 -  [Handlers](#handlers)
@@ -115,6 +116,38 @@ this.data = Observable.from(rxrest.all('foos', true).get())
 
 ```html
 <div *ngFor="let d of data | async"></div>
+```
+
+## Object state (`$fromServer`, `$pristine`)
+
+Thanks to the Proxy, we can get metadata informations about the current object and it's state.
+
+When you instantiate an object, it's `$pristine`. When it gets modified it's dirty:
+
+```javascript
+const rxrest = new RxRest()
+const car = rxrest.one('car', 1)
+
+assert(car.$prisine === true)
+
+car.brand = 'Ford'
+
+assert(car.$prisine === false)
+```
+
+You can also check that the item comes from the server:
+
+```javascript
+const rxrest = new RxRest()
+const car = rxrest.one('car', 1)
+
+assert(car.$fromServer === false) // we just instantiated it in the client
+
+car.save()
+.observe((car) => {
+  assert(car.$fromServer === true) //now it's from the server
+  assert(car.$prisine === true) //it's also pristine!
+})
 ```
 
 <sup>[^ Back to menu](#menu)</sup>

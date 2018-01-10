@@ -661,6 +661,20 @@ describe('RxRest', function() {
     })
   })
 
+  it('should not change $pristine if value is the same', function() {
+    return rxrest.one('test', 3)
+    .get({foo: 'bar'})
+    .observe((item) => {
+      expect(item).to.be.an.instanceof(RxRestItem)
+      expect(item.$pristine).to.be.true
+
+      item.foo = 'bar'
+
+      expect(item.$pristine).to.be.true
+      expect(item.$fromServer).to.be.true
+    })
+  })
+
   it('should add uuids', function(done) {
     const config = new RxRestConfiguration()
     config.baseURL = 'http://localhost:3333'
