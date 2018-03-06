@@ -10,19 +10,23 @@ import {
 import { RxRestCollection, RxRestItem } from './index'
 import { Observable } from 'rxjs/Observable'
 import { Observer } from 'rxjs/Observer'
+import { mergeMap, catchError } from 'rxjs/operators'
+import { fromPromise } from 'rxjs/observable/fromPromise'
+import { _throw } from 'rxjs/observable/throw'
+import { of } from 'rxjs/observable/of'
 
 import { objectToMap, uuid } from './utils'
 
-const fromPromise = function(promise: Promise<any>) {
-  return Observable.create((observer: Observer<any>) => {
-    promise
-    .then((v) => {
-      observer.next(v)
-      observer.complete()
-    })
-    .catch(observer.error)
-  })
-}
+// const fromPromise = function(promise: Promise<any>) {
+//   return Observable.create((observer: Observer<any>) => {
+//     promise
+//     .then((v) => {
+//       observer.next(v)
+//       observer.complete()
+//     })
+//     .catch(observer.error)
+//   })
+// }
 
 export class RxRest<F, T> {
   protected $route: string[]
@@ -387,7 +391,7 @@ export class RxRest<F, T> {
           obs.concatMap(value => {
             let result = interceptor(value)
             if (result === undefined) {
-              return Observable.of(value)
+              return of(value)
             }
 
             if (result instanceof Promise) {
@@ -398,9 +402,9 @@ export class RxRest<F, T> {
               return result
             }
 
-            return Observable.of(result)
+            return of(result)
           }),
-        Observable.of(origin)
+        of(origin)
       )
     }
   }
@@ -419,61 +423,61 @@ export class RxRest<F, T> {
       body: this.config.requestBodyHandler(body)
     }
 
-    let request = new Request(this.URL + this.requestQueryParams, requestOptions);
-
+    let request = new Request(this.URL + this.requestQueryParams, requestOptions)
     let stream = <Observable<F>> Observable.of(request)
-    .mergeMap(this.expandInterceptors(this.config.requestInterceptors))
-    .mergeMap(request => this.config.fetch(request, null, this.config.abortCallback))
-    .mergeMap(this.expandInterceptors(this.config.responseInterceptors))
-    .mergeMap(body => fromPromise(this.config.responseBodyHandler(body)))
-    .mergeMap(({body, metadata}) => {
-      if (!Array.isArray(body)) {
-        let item: RxRestItem<T>
-        if (this instanceof RxRestItem) {
-          item = this
-          item.element = body as T
-          item.$metadata = metadata
-        } else {
-          item = new RxRestItem<T>(this.$route, body, this.config, metadata)
+    .pipe(
+      mergeMap(this.expandInterceptors(this.config.requestInterceptors)),
+      mergeMap(request => this.config.fetch(request, null, this.config.abortCallback)),
+      mergeMap(this.expandInterceptors(this.config.responseInterceptors)),
+      mergeMap(body => fromPromise(this.config.responseBodyHandler(body))),
+      mergeMap(({body, metadata}) => {
+        if (!Array.isArray(body)) {
+          let item: RxRestItem<T>
+          if (this instanceof RxRestItem) {
+            item = this
+            item.element = body as T
+            item.$metadata = metadata
+          } else {
+            item = new RxRestItem<T>(this.$route, body, this.config, metadata)
+          }
+
+          item.$fromServer = true
+          item.$pristine = true
+
+          return Observable.create((observer: Observer<RxRestItem<T>>) => {
+            observer.next(item)
+            observer.complete()
+          })
         }
 
-        item.$fromServer = true
-        item.$pristine = true
+        let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
+          let item = new RxRestItem<T>(this.$route, e, this.config, metadata)
+          item.$fromServer = true
+          item.$pristine = true
+          return item
+        }), this.config, metadata)
 
-        return Observable.create((observer: Observer<RxRestItem<T>>) => {
-          observer.next(item)
+        collection.$pristine = true
+
+        return Observable.create((observer: Observer<RxRestItem<T>|RxRestCollection<T>>) => {
+          if (this.$asIterable) {
+            observer.next(collection)
+          } else {
+            for (let item of collection) {
+              observer.next(item)
+            }
+          }
+
           observer.complete()
         })
-      }
-
-      let collection = new RxRestCollection<T>(this.$route, body.map((e: T) => {
-        let item = new RxRestItem<T>(this.$route, e, this.config, metadata)
-        item.$fromServer = true
-        item.$pristine = true
-        return item
-      }), this.config, metadata)
-
-      collection.$pristine = true
-
-      return Observable.create((observer: Observer<RxRestItem<T>|RxRestCollection<T>>) => {
-        if (this.$asIterable) {
-          observer.next(collection)
-        } else {
-          for (let item of collection) {
-            observer.next(item)
-          }
-        }
-
-        observer.complete()
+      }),
+      catchError(body => {
+        return of(body).pipe(
+          mergeMap(this.expandInterceptors(this.config.errorInterceptors)),
+          mergeMap((body: ErrorResponse) => _throw(body))
+        )
       })
-    })
-    .catch((body) => {
-      return Observable.of(body)
-      .mergeMap(this.expandInterceptors(this.config.errorInterceptors))
-      .mergeMap((body: ErrorResponse) => {
-        return Observable.throw(body)
-      })
-    })
+    )
 
     return stream
   }

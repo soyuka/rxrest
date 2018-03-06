@@ -235,14 +235,14 @@ describe('RxRest', function () {
     config.requestInterceptors = [
       function (req) {
         spy()
-        req.method = 'FOO'
+        req.foo = 'FOO'
         return Observable.of(req)
       },
       function (req) {
         return new Promise((resolve, reject) => {
           spy()
-          expect(req.method).to.equal('FOO')
-          req.method = 'GET'
+          expect(req.foo).to.equal('FOO')
+          req.foo = 'GET'
           resolve(req)
         })
       },
@@ -438,7 +438,7 @@ describe('RxRest', function () {
     )
   })
 
-  it('should chain query params', function () {
+  it('should chain query params', function (cb) {
     let spy = chai.spy(function () {})
 
     config.requestInterceptors = [
@@ -449,13 +449,14 @@ describe('RxRest', function () {
       }
     ]
 
-    return rxrest.all('test')
+    rxrest.all('test')
     .setQueryParams({foo: 'bar'})
     .setHeaders({'Content-Type': 'application/x-www-form-urlencoded'})
     .request('GET')
     .subscribe(item => {
-      expect(item.foo).to.equal('bar')
+      expect(item[0].foo).to.equal('bar')
       expect(spy).to.have.been.called.exactly(1)
+      cb()
     })
   })
 
