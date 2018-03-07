@@ -420,7 +420,7 @@ export class RxRest<F, T> {
     let requestOptions = {
       method: method,
       headers: <Headers> this.requestHeaders,
-      body: this.config.requestBodyHandler(body)
+      body: this.config.requestBodyHandler(body) as any
     }
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions)
