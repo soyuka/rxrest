@@ -27,9 +27,7 @@ export function fetch(
     return Observable.create((observer: Observer<any>) => {
       req.end(function(err: any, res: any) {
         if (err) {
-          let response = new Response(err, res) as ErrorResponse
-          response.message = response.statusText
-          return observer.error(response)
+          return observer.error(res)
         }
 
         if (res.noContent === true) {
