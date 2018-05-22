@@ -745,6 +745,12 @@ describe('RxRest', function () {
     })
   })
 
+  it('should have a suffix', function () {
+    expect(rxrest.one('test', 1, 'suffix').$route).to.deep.equal(['test', '1', 'suffix'])
+    expect(rxrest.fromObject('test', {id: '1'}, 'suffix', 'state').$route).to.deep.equal(['test', '1', 'suffix', 'state'])
+    expect(rxrest.one('test', 1, 'suffix', 'state').$route).to.deep.equal(['test', '1', 'suffix', 'state'])
+  })
+
   after(() => {
     server.close()
   })

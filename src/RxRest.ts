@@ -68,14 +68,14 @@ export class RxRest<F, T> {
    * @param {any} id
    * @returns {RxRestItem}
    */
-  one<T>(route: string, id?: any): RxRestItem<T> {
+  one<T>(route: string, id?: any, ...suffix: string[]): RxRestItem<T> {
     this.addRoute(route)
     let o = {} as T
     if (id) {
       o[this.config.identifier] = id
     }
 
-    return new RxRestItem<T>(this.$route, o, this.config)
+    return new RxRestItem<T>(this.$route, o, this.config, null, suffix)
   }
 
   /**
@@ -109,13 +109,14 @@ export class RxRest<F, T> {
    * @param {Object|Object[]} element
    * @returns {RxRestItem|RxRestCollection}
    */
-  fromObject<T>(route: string, element: T|T[]): RxRestItem<T>|RxRestCollection<T> {
+  fromObject<T>(route: string, element: T|T[], suffix: string[]):
+    RxRestItem<T>|RxRestCollection<T> {
     this.addRoute(route)
     if (Array.isArray(element)) {
       return new RxRestCollection<T>(this.$route, element, this.config)
     }
 
-    return new RxRestItem<T>(this.$route, element, this.config)
+    return new RxRestItem<T>(this.$route, element, this.config, null, suffix)
   }
 
   /**

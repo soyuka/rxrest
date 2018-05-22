@@ -13,11 +13,19 @@ export class RxRestItem<T> extends AbstractRxRest<RxRestItem<T> & T, T> {
    * @param {T} [element]
    * @return {Proxy}
    */
-  constructor(route: string[], element?: T, config?: RxRestConfiguration, metadata?: any) {
+  constructor(route: string[], element?: T, config?: RxRestConfiguration,
+              metadata?: any, suffix?: string[]) {
     super(config, route, metadata)
 
     if (element !== undefined) {
       this.element = element
+    }
+
+    if (Array.isArray(suffix)) {
+      suffix = [].concat.apply([], suffix)
+      if (suffix.length) {
+        this.addRoute(suffix.join('/'))
+      }
     }
 
     const proxy = new Proxy(this.$element, new RxRestProxyHandler<RxRestItem<T>, T>(this))
@@ -212,9 +220,9 @@ export class RxRest {
   constructor(private config: RxRestConfiguration) {
   }
 
-  one<T>(route: string, id?: any): RxRestItem<T> & T {
+  one<T>(route: string, id?: any, ...suffix: string[]): RxRestItem<T> & T {
     let r = new AbstractRxRest(this.config)
-    return r.one.call(r, route, id)
+    return r.one.call(r, route, id, suffix)
   }
 
   all<T>(route: string, asIterable: boolean = true): RxRestCollection<T> & T[] {
@@ -222,9 +230,10 @@ export class RxRest {
     return r.all.call(r, route, asIterable)
   }
 
-  fromObject<T>(route: string, element: T|T[]): (RxRestItem<T> & T) | (RxRestCollection<T> & T[]) {
+  fromObject<T>(route: string, element: T|T[], ...suffix: string[]):
+    (RxRestItem<T> & T) | (RxRestCollection<T> & T[]) {
     let r = new AbstractRxRest(this.config)
-    return r.fromObject.call(r, route, element)
+    return r.fromObject.call(r, route, element, suffix)
   }
 }
 
