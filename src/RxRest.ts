@@ -1,4 +1,3 @@
-import './rxjs'
 import { RxRestConfiguration } from './RxRestConfiguration'
 import {
   RequestInterceptor,
@@ -8,13 +7,8 @@ import {
   BodyParam
 } from './interfaces'
 import { RxRestCollection, RxRestItem } from './index'
-import { Observable } from 'rxjs/Observable'
-import { Observer } from 'rxjs/Observer'
-import { mergeMap, catchError } from 'rxjs/operators'
-import { fromPromise } from 'rxjs/observable/fromPromise'
-import { _throw } from 'rxjs/observable/throw'
-import { of } from 'rxjs/observable/of'
-
+import { Observable, Observer, from as fromPromise, throwError as _throw, of } from 'rxjs'
+import { mergeMap, catchError, concatMap } from 'rxjs/operators'
 import { objectToMap, uuid } from './utils'
 
 // const fromPromise = function(promise: Promise<any>) {
@@ -389,7 +383,7 @@ export class RxRest<F, T> {
     return function(origin: any): Observable<any> {
       return (<any>interceptors).reduce(
         (obs: Observable<any>, interceptor: any) =>
-          obs.concatMap(value => {
+          obs.pipe(concatMap(value => {
             let result = interceptor(value)
             if (result === undefined) {
               return of(value)
@@ -404,7 +398,7 @@ export class RxRest<F, T> {
             }
 
             return of(result)
-          }),
+          })),
         of(origin)
       )
     }
@@ -425,7 +419,7 @@ export class RxRest<F, T> {
     }
 
     let request = new Request(this.URL + this.requestQueryParams, requestOptions)
-    let stream = <Observable<F>> Observable.of(request)
+    let stream = <Observable<F>> of(request)
     .pipe(
       mergeMap(this.expandInterceptors(this.config.requestInterceptors)),
       mergeMap(request => this.config.fetch(request, null, this.config.abortCallback)),

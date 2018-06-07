@@ -44,7 +44,7 @@
     "uglify-js": "github:mishoo/UglifyJS2#harmony"
   },
   "dependencies": {
-    "rxjs": "^5.5.6",
+    "rxjs": "^6.2.0",
     "superagent": "^3.8.2"
   }
 }

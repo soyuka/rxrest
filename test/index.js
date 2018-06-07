@@ -5,7 +5,8 @@ chai.use(spies)
 const expect = chai.expect
 const express = require('express')
 
-const {Observable} = require('rxjs/Rx')
+const {from, of, merge} = require('rxjs')
+const {mergeMap, switchMap, delay} = require('rxjs/operators')
 const {Headers, Response, Request} = require('node-fetch')
 require('./urlsearchparamspolyfill.js')
 
@@ -114,8 +115,10 @@ describe('RxRest', function () {
     .then((data) => {
       data.push(new RxRestItem('test', {id: 5}))
 
-      return Observable.from(data.map(item => rxrest.one('test', item.id)))
-      .flatMap(item => item.get({foo: 'bar'}))
+      return from(data.map(item => rxrest.one('test', item.id)))
+      .pipe(
+        mergeMap(item => item.get({foo: 'bar'}))
+      )
       .subscribe(e => {
         if (i === 0) {
           expect(e.id).to.equal(3)
@@ -236,7 +239,7 @@ describe('RxRest', function () {
       function (req) {
         spy()
         req.foo = 'FOO'
-        return Observable.of(req)
+        return of(req)
       },
       function (req) {
         return new Promise((resolve, reject) => {
@@ -277,10 +280,12 @@ describe('RxRest', function () {
 
     return rxrest.one('test', 3)
     .get()
-    .flatMap(e => {
-      e.bar = 'foo'
-      return e.save()
-    })
+    .pipe(
+      mergeMap(e => {
+        e.bar = 'foo'
+        return e.save()
+      })
+    )
     .subscribe(e => {
       expect(e).to.deep.equal({bar: 'foo', id: 3, method: 'put'})
     })
@@ -399,7 +404,7 @@ describe('RxRest', function () {
     .subscribe(function (e) {
       expect(e).to.be.an.instanceof(RxRestItem)
       expect(e.method).to.equal('delete')
-      Observable.merge(e.patch(), e.trace())
+      merge(e.patch(), e.trace())
       .subscribe(() => {}, () => {}, () => {
         cb()
       })
@@ -426,9 +431,8 @@ describe('RxRest', function () {
 
     let t = rxrest.all('timeout')
 
-    Observable.from([0, 1])
-    .delay(10)
-    .mergeMap(() => t.get())
+    from([0, 1])
+    .pipe(delay(10), mergeMap(() => t.get()))
     .subscribe(() => cb(new Error('Next called')),
       (err) => {
         expect(err.status).to.equal(504)
@@ -531,11 +535,10 @@ describe('RxRest', function () {
   })
 
   it.skip('should work with rxjs switch map and get end event on empty', function (cb) {
-    var source = Observable
-      .of('v')
-      .switchMap(function (x) {
-        return rxrest.all('empty').get()
-      })
+    var source = of('v')
+    .pipe(switchMap(function (x) {
+      return rxrest.all('empty').get()
+    }))
 
     source.subscribe((v) => {}, () => {}, () => cb())
   })

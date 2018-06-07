@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/Observable'
+import { Observable } from 'rxjs'
 import { RxRestProxyHandler } from './RxRestProxyHandler'
 import { RxRest as AbstractRxRest } from './RxRest'
 import { RxRestConfiguration } from './RxRestConfiguration';

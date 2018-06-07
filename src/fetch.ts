@@ -1,8 +1,7 @@
-import './rxjs'
 import {ErrorResponse} from './interfaces'
 import * as superagent from 'superagent'
-import {Observable} from 'rxjs/Observable'
-import {Observer} from 'rxjs/Observer'
+import {Observable, Observer, from as fromPromise} from 'rxjs'
+import {mergeMap} from 'rxjs/operators'
 
 export function fetch(
   input: string|Request,
@@ -20,34 +19,36 @@ export function fetch(
     req.set(header[0], header[1])
   }
 
-  return Observable.fromPromise(input.text())
-  .mergeMap(body => {
-    req.send(body)
+  return fromPromise(input.text())
+  .pipe(
+    mergeMap(body => {
+      req.send(body)
 
-    return Observable.create((observer: Observer<any>) => {
-      req.end(function(err: any, res: any) {
-        if (err) {
-          return observer.error(res)
+      return Observable.create((observer: Observer<any>) => {
+        req.end(function(err: any, res: any) {
+          if (err) {
+            return observer.error(res)
+          }
+
+          if (res.noContent === true) {
+            observer.next(new Response())
+            return observer.complete()
+          }
+
+          res.url = (input as Request).url
+          let response = new Response(res.text, res)
+
+          observer.next(response)
+          observer.complete()
+        })
+
+        return function abort() {
+          req.abort()
+          if (abortCallback) {
+            abortCallback(req)
+          }
         }
-
-        if (res.noContent === true) {
-          observer.next(new Response())
-          return observer.complete()
-        }
-
-        res.url = (input as Request).url
-        let response = new Response(res.text, res)
-
-        observer.next(response)
-        observer.complete()
       })
-
-      return function abort() {
-        req.abort()
-        if (abortCallback) {
-          abortCallback(req)
-        }
-      }
     })
-  })
+  )
 }
