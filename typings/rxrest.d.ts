@@ -1,7 +1,7 @@
 export as namespace RxRest
 export = RxRest
 
-import { Observable } from 'rxjs/Observable'
+import { Observable } from 'rxjs'
 
 declare namespace RxRest {
   function fetch(input: string | Request,
